@@ -2,12 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Red Ribbons | Elegant Gifting Catalogue</title>
-  <!-- Google Fonts + Font Awesome 6 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Red Ribbons | Unwrap the Elegance</title>
+  <!-- Google Fonts & Font Awesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     * {
@@ -17,135 +15,235 @@
     }
 
     body {
-      background-color: #fef7f0;  /* soft beige base */
+      background-color: #fef6ef;
       font-family: 'Inter', sans-serif;
-      color: #2e241f;
+      color: #2c241f;
       overflow-x: hidden;
     }
 
-    /* ========== RIBBON UNWRAP ANIMATION (OVERLAY) ========== */
-    .unwrap-overlay {
+    /* ========== RIBBON UNWRAP ANIMATION (GIFT BOX OPENS) ========== */
+    .gift-unwrap-screen {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: #faf3e8;   /* beige background */
-      z-index: 9999;
+      background: #f8ede3;  /* soft beige background */
+      z-index: 10000;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-direction: column;
-      transition: opacity 1s ease, visibility 1s ease;
-      pointer-events: none; /* after animation can click through, but we set timeout to remove */
+      transition: opacity 1.2s cubic-bezier(0.23, 1, 0.32, 1), visibility 0s linear 1.2s;
+      backdrop-filter: blur(2px);
     }
 
-    .ribbon-box {
+    /* Gift Box Container */
+    .gift-box-container {
       position: relative;
-      width: 280px;
-      height: 280px;
-      background: #c03b2b;  /* rich red */
-      border-radius: 20px;
-      box-shadow: 0 25px 40px rgba(0,0,0,0.2);
+      width: 340px;
+      height: 340px;
+      perspective: 800px;
+      cursor: pointer;
+    }
+
+    .gift-box {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.8s ease-out;
+    }
+
+    /* Box lid & body */
+    .box-lid {
+      position: absolute;
+      width: 100%;
+      height: 35%;
+      background: #bc3f2e;
+      top: 0;
+      left: 0;
+      border-radius: 18px 18px 8px 8px;
+      transform-origin: top center;
+      transform: rotateX(0deg);
+      transition: transform 0.7s cubic-bezier(0.34, 1.2, 0.64, 1);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 3px solid #a53324;
+    }
+    .box-lid:before {
+      content: "🎀";
+      position: absolute;
+      font-size: 3rem;
+      top: 60%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.9;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .box-body {
+      position: absolute;
+      width: 100%;
+      height: 70%;
+      background: #d64d3a;
+      bottom: 0;
+      left: 0;
+      border-radius: 12px 12px 28px 28px;
+      box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+      z-index: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      animation: boxGlow 0.8s ease-in-out;
     }
-
-    .ribbon-box:before,
-    .ribbon-box:after {
+    /* decorative red ribbon cross on body */
+    .box-body .ribbon-cross {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+    .ribbon-cross:before, .ribbon-cross:after {
       content: "";
       position: absolute;
-      background: #b52b1a;
-      width: 200%;
-      height: 40px;
+      background: #c73e2c;
+      width: 20px;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 0 0 2px #f9cfbc;
+    }
+    .ribbon-cross:after {
+      width: 100%;
+      height: 20px;
       top: 50%;
-      left: -50%;
-      transform: translateY(-50%) rotate(25deg);
-      box-shadow: 0 0 8px rgba(0,0,0,0.2);
-      transition: all 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      left: 0;
+      transform: translateY(-50%);
     }
 
-    .ribbon-box:after {
+    .gift-sparkle {
+      position: absolute;
+      font-size: 2rem;
+      z-index: 10;
+      color: #ffd966;
+      filter: drop-shadow(0 0 4px gold);
+      pointer-events: none;
+    }
+
+    /* when animation triggers: lid opens and ribbons pull away */
+    .unwrap-active .box-lid {
+      transform: rotateX(-100deg) translateY(-15px);
+    }
+    .unwrap-active .box-body {
+      animation: bodyPop 0.5s ease-out 0.3s forwards;
+    }
+    @keyframes bodyPop {
+      0% { transform: scale(1);}
+      100% { transform: scale(1.02); background: #e05844; box-shadow: 0 30px 40px rgba(0,0,0,0.2);}
+    }
+
+    /* sliding ribbons from sides (additional flair) */
+    .unwrap-active ~ .magic-ribbons {
+      opacity: 1;
+      animation: slideRibbons 0.8s forwards;
+    }
+    .magic-ribbons {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10001;
+      opacity: 0;
+    }
+    .ribbon-left, .ribbon-right {
+      position: absolute;
+      width: 200px;
+      height: 40px;
+      background: linear-gradient(135deg, #e03a24, #b02c1a);
+      top: 50%;
+      border-radius: 40px;
+      filter: blur(2px);
+      opacity: 0.8;
+    }
+    .ribbon-left {
+      left: -100px;
+      transform: translateY(-50%) rotate(25deg);
+      animation: slideFromLeft 0.6s ease-out forwards;
+    }
+    .ribbon-right {
+      right: -100px;
       transform: translateY(-50%) rotate(-25deg);
-      background: #d44c3c;
+      animation: slideFromRight 0.6s ease-out forwards;
+    }
+    @keyframes slideFromLeft {
+      0% { left: -100px; opacity: 0; }
+      100% { left: 5%; opacity: 0.9; width: 280px; }
+    }
+    @keyframes slideFromRight {
+      0% { right: -100px; opacity: 0; }
+      100% { right: 5%; opacity: 0.9; width: 280px;}
     }
 
     .unwrap-text {
-      position: relative;
-      z-index: 2;
+      margin-top: 40px;
       font-family: 'Playfair Display', serif;
-      font-weight: 600;
-      font-size: 1.8rem;
-      color: #fff3e6;
-      text-shadow: 2px 2px 8px #7a2a1e;
+      font-size: 1.3rem;
       letter-spacing: 2px;
+      color: #ad4a38;
+      background: rgba(255,245,235,0.8);
+      padding: 8px 26px;
+      border-radius: 60px;
+      backdrop-filter: blur(4px);
+      font-weight: 500;
     }
 
-    /* ribbon sliding animation */
-    .animate-unwrap .ribbon-box:before {
-      transform: translateY(-50%) rotate(25deg) translateX(120%);
-    }
-    .animate-unwrap .ribbon-box:after {
-      transform: translateY(-50%) rotate(-25deg) translateX(-120%);
-    }
-    .animate-unwrap .unwrap-text {
-      opacity: 0;
-      transform: scale(0.8);
-      transition: 0.3s;
-    }
-
-    @keyframes boxGlow {
-      0% { opacity: 0; transform: scale(0.9); box-shadow: 0 0 0 rgba(192,59,43,0);}
-      100% { opacity: 1; transform: scale(1); box-shadow: 0 20px 35px rgba(0,0,0,0.2);}
-    }
-
-    /* main content initially hidden, then revealed */
+    /* main content initially hidden */
     .main-site {
       opacity: 0;
-      transition: opacity 1.2s ease;
+      transition: opacity 1s ease-in-out;
     }
 
-    /* ========== GLOBAL STYLES ========== */
+    /* ========== GLOBAL WEBSITE STYLES (RED & BEIGE THEME, MATCH FNP) ========== */
     .container {
       max-width: 1400px;
       margin: 0 auto;
       padding: 0 32px;
     }
 
-    /* navbar */
     .navbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 20px 0;
+      padding: 24px 0;
       flex-wrap: wrap;
-      border-bottom: 1px solid #e6dacf;
+      border-bottom: 1px solid #ecdacf;
     }
     .logo h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 1.8rem;
+      font-size: 2rem;
       letter-spacing: -0.5px;
-      color: #b83424;
+      color: #bc3524;
     }
     .logo span {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 400;
-      display: block;
-      color: #8b6f5c;
+      color: #aa7d66;
       letter-spacing: 2px;
     }
     .nav-links {
       display: flex;
-      gap: 28px;
+      gap: 32px;
       list-style: none;
     }
     .nav-links a {
       text-decoration: none;
       font-weight: 500;
-      color: #3e2c23;
+      color: #493b32;
       transition: 0.2s;
       font-size: 0.95rem;
     }
@@ -154,177 +252,177 @@
     }
     .icons-header {
       display: flex;
-      gap: 18px;
+      gap: 20px;
       font-size: 1.2rem;
-      color: #5c3f30;
+      color: #735e4e;
     }
     .icons-header i {
       cursor: pointer;
       transition: 0.2s;
     }
     .icons-header i:hover {
-      color: #b83424;
+      color: #bc3524;
     }
 
-    /* hero section */
     .hero {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       padding: 48px 0 32px;
-      gap: 30px;
-    }
-    .hero-text {
-      flex: 1;
+      gap: 40px;
     }
     .hero-text h2 {
-      font-size: 3rem;
+      font-size: 3.2rem;
       font-weight: 500;
       font-family: 'Playfair Display', serif;
-      color: #b83524;
+      color: #b53b2a;
       line-height: 1.2;
     }
     .hero-text p {
       margin: 20px 0;
-      color: #5d4536;
-      font-size: 1rem;
-      max-width: 500px;
+      color: #6a4f3e;
     }
     .btn-primary {
-      background: #b83424;
+      background: #bc3524;
       border: none;
-      padding: 12px 32px;
+      padding: 12px 34px;
       color: white;
       font-weight: 600;
       border-radius: 40px;
       font-size: 0.9rem;
       cursor: pointer;
       transition: 0.25s;
-      box-shadow: 0 4px 8px rgba(184,52,36,0.2);
+      box-shadow: 0 6px 14px rgba(188,53,36,0.25);
     }
     .btn-primary:hover {
-      background: #9b2c1f;
-      transform: translateY(-2px);
-    }
-    .hero-image {
-      flex: 1;
-      text-align: center;
+      background: #9b2a1c;
+      transform: translateY(-3px);
     }
     .hero-image img {
       max-width: 100%;
       border-radius: 32px;
-      box-shadow: 0 20px 30px -10px rgba(0,0,0,0.1);
+      box-shadow: 0 25px 35px -12px rgba(0,0,0,0.12);
+      background: #f5e4d8;
     }
 
-    /* catalogue section */
+    .occasion-banner {
+      background: #fdf5ef;
+      padding: 18px 20px;
+      border-radius: 80px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 32px;
+      margin: 20px 0 30px;
+    }
+    .occasion-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 500;
+      color: #5b3f30;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .occasion-item i {
+      font-size: 1.3rem;
+      color: #c1624e;
+    }
     .section-title {
       text-align: center;
       font-size: 2rem;
       font-family: 'Playfair Display', serif;
       margin: 60px 0 30px;
-      position: relative;
-      color: #2e241f;
+      color: #35261f;
     }
     .section-title:after {
       content: '';
       width: 70px;
       height: 2px;
-      background: #c46252;
+      background: #d68b76;
       display: block;
       margin: 12px auto 0;
     }
     .catalogue-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
       gap: 35px;
       margin-bottom: 60px;
     }
     .product-card {
-      background: #fffaf5;
+      background: #fffbf7;
       border-radius: 28px;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.03);
-      border: 1px solid #f1e3d8;
+      transition: all 0.3s;
+      border: 1px solid #f2e2d6;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.02);
     }
     .product-card:hover {
       transform: translateY(-8px);
-      box-shadow: 0 20px 30px -12px rgba(175, 80, 60, 0.2);
-      border-color: #f0cfc2;
+      box-shadow: 0 25px 30px -15px rgba(180,70,50,0.2);
+      border-color: #f0cfbf;
     }
     .product-img {
-      height: 220px;
-      background-color: #f8ede4;
+      height: 230px;
+      background: #fdf1e8;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3.5rem;
-      color: #b85c48;
+      font-size: 4rem;
+      color: #bc5a46;
+      border-radius: 28px 28px 0 0;
     }
     .product-info {
-      padding: 18px 20px 22px;
+      padding: 20px 22px 24px;
     }
     .product-title {
       font-weight: 700;
       font-size: 1.2rem;
-      margin-bottom: 6px;
     }
     .product-desc {
       font-size: 0.8rem;
-      color: #8a6f5e;
-      margin-bottom: 14px;
+      color: #987f6d;
+      margin: 6px 0 12px;
     }
     .price-row {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      margin-top: 12px;
     }
     .price {
       font-weight: 700;
-      color: #b83b2a;
+      color: #c54a36;
       font-size: 1.2rem;
-    }
-    .old-price {
-      font-size: 0.8rem;
-      text-decoration: line-through;
-      color: #b9a392;
     }
     .btn-add {
       background: none;
-      border: 1px solid #e2cdbe;
-      padding: 6px 12px;
+      border: 1px solid #e1cdbe;
+      padding: 6px 14px;
       border-radius: 40px;
       font-weight: 500;
       font-size: 0.75rem;
       cursor: pointer;
       transition: 0.2s;
-      color: #8b5a48;
     }
     .btn-add:hover {
-      background: #b83424;
+      background: #bc3524;
       color: white;
-      border-color: #b83424;
+      border-color: #bc3524;
     }
-
-    /* footer and menus */
     footer {
       background: #f9efe7;
       padding: 50px 0 25px;
-      margin-top: 60px;
-      border-top: 1px solid #e9dbd0;
+      margin-top: 50px;
+      border-top: 1px solid #eedfcf;
     }
     .footer-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
       gap: 40px;
-      margin-bottom: 40px;
     }
     .footer-col h4 {
-      font-size: 1rem;
-      margin-bottom: 18px;
-      color: #b63423;
+      color: #b54331;
+      margin-bottom: 20px;
       font-weight: 600;
     }
     .footer-col ul {
@@ -335,89 +433,54 @@
     }
     .footer-col a {
       text-decoration: none;
-      color: #5c4537;
+      color: #6a4f3e;
       font-size: 0.85rem;
-      transition: 0.2s;
     }
     .footer-col a:hover {
-      color: #c03b2b;
+      color: #bc3524;
       padding-left: 4px;
     }
     .copyright {
       text-align: center;
       font-size: 0.75rem;
-      color: #ab8d79;
-      padding-top: 20px;
-      border-top: 1px solid #e1cfc2;
+      padding-top: 30px;
+      color: #b58a74;
     }
-
-    /* quick menu banner */
-    .occasion-banner {
-      background: #fcf3ea;
-      padding: 18px 20px;
-      border-radius: 80px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 28px;
-      margin: 30px 0 10px;
-    }
-    .occasion-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 500;
-      color: #5b3d2e;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .occasion-item i {
-      font-size: 1.3rem;
-      color: #bb5b48;
-    }
-    .occasion-item:hover {
-      color: #b63423;
-      transform: translateY(-2px);
-    }
-
-    /* responsiveness */
-    @media (max-width: 860px) {
-      .navbar {
-        flex-direction: column;
-        gap: 15px;
-      }
-      .nav-links {
-        gap: 18px;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-      .hero-text h2 {
-        font-size: 2.2rem;
-      }
-      .container {
-        padding: 0 20px;
-      }
+    @media (max-width: 800px) {
+      .navbar { flex-direction: column; gap: 16px; }
+      .hero-text h2 { font-size: 2rem; }
+      .container { padding: 0 20px; }
     }
   </style>
 </head>
 <body>
 
-<!-- UNWRAP ANIMATION overlay -->
-<div id="unwrapOverlay" class="unwrap-overlay">
-  <div class="ribbon-box" id="ribbonBox">
-    <div class="unwrap-text">✨ Red Ribbons ✨</div>
+<!-- GIFT UNWRAPPING SCREEN (ribbon opens, box lid lifts) -->
+<div id="giftUnwrapScreen" class="gift-unwrap-screen">
+  <div class="gift-box-container" id="giftBoxContainer">
+    <div class="gift-box" id="giftBox">
+      <div class="box-lid"></div>
+      <div class="box-body">
+        <div class="ribbon-cross"></div>
+      </div>
+    </div>
   </div>
-  <p style="margin-top: 30px; font-family: 'Inter'; font-weight: 300; letter-spacing: 1px; color: #b55744;">unwrapping elegance...</p>
+  <div class="unwrap-text" id="unwrapText">🎁 pull the ribbon 🎀</div>
+  <!-- animated ribbons that slide from sides -->
+  <div class="magic-ribbons" id="magicRibbons">
+    <div class="ribbon-left"></div>
+    <div class="ribbon-right"></div>
+  </div>
 </div>
 
-<!-- Main website content -->
+<!-- MAIN WEBSITE: RED RIBBONS GIFT CATALOGUE -->
 <div class="main-site" id="mainSite">
   <div class="container">
-    <!-- navigation + header similar to FNP style  -->
+    <!-- navigation -->
     <nav class="navbar">
       <div class="logo">
         <h1>Red Ribbons</h1>
-        <span>gift studio</span>
+        <span>unfolding moments</span>
       </div>
       <ul class="nav-links">
         <li><a href="#" class="active">Home</a></li>
@@ -434,20 +497,19 @@
       </div>
     </nav>
 
-    <!-- hero banner inspired by FNP richness -->
+    <!-- hero -->
     <div class="hero">
       <div class="hero-text">
-        <h2>Gifts that <br> unwrap joy.</h2>
-        <p>Express love with our curated collection — flowers, cakes, hampers, and bespoke treasures. Same-day delivery & beautiful red-ribbon packaging.</p>
-        <button class="btn-primary">Explore Catalogue →</button>
+        <h2>Gifts wrapped<br>with red ribbons.</h2>
+        <p>Discover curated luxury — fresh flowers, artisan cakes, bespoke hampers, and heartfelt keepsakes. Same-day delivery & exquisite presentation.</p>
+        <button class="btn-primary shop-now-btn">Shop Now →</button>
       </div>
       <div class="hero-image">
-        <!-- aesthetic illustration placeholder -->
-        <img src="https://placehold.co/600x400/F9EFE7/BF6B58?text=Red+Ribbons+Elegance&font=playfair" alt="hero gifting" style="background:#f3e5db; object-fit:cover;">
+        <img src="https://placehold.co/600x420/FCEFE5/BF6B58?text=Elegant+Gift+Edit&font=playfair" alt="Red Ribbons hero">
       </div>
     </div>
 
-    <!-- occasion quick menu (matching FNP gift finder) -->
+    <!-- occasion quick menu -->
     <div class="occasion-banner">
       <div class="occasion-item"><i class="fas fa-birthday-cake"></i> Birthday</div>
       <div class="occasion-item"><i class="fas fa-ring"></i> Anniversary</div>
@@ -457,83 +519,47 @@
       <div class="occasion-item"><i class="fas fa-church"></i> Rakhi / Festive</div>
     </div>
 
-    <!-- CATALOGUE SECTION: products with red & beige aesthetic -->
-    <h2 class="section-title">Our Signature Collection</h2>
+    <!-- Catalogue section 1 -->
+    <h2 class="section-title">Best Sellers: Ribbon-Wrapped Favourites</h2>
     <div class="catalogue-grid" id="productGrid"></div>
 
-    <!-- second section : curated gift ideas -->
-    <h2 class="section-title">Luxury Combos & Hampers</h2>
+    <!-- Luxury combos & hampers -->
+    <h2 class="section-title">Luxury Hampers & Combos</h2>
     <div class="catalogue-grid" id="comboGrid"></div>
-
   </div>
 
-  <!-- FOOTER with menus (inspired by FNP) -->
+  <!-- Footer -->
   <footer>
     <div class="container">
       <div class="footer-grid">
-        <div class="footer-col">
-          <h4>RED RIBBONS</h4>
-          <ul>
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Contact Us</a></li>
-            <li><a href="#">Store Locator</a></li>
-            <li><a href="#">Franchise Enquiry</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>QUICK LINKS</h4>
-          <ul>
-            <li><a href="#">Birthday Gifts</a></li>
-            <li><a href="#">Anniversary Gifts</a></li>
-            <li><a href="#">Personalised Gifts</a></li>
-            <li><a href="#">Corporate Gifting</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>CUSTOMER CARE</h4>
-          <ul>
-            <li><a href="#">Delivery Info</a></li>
-            <li><a href="#">Returns & Exchange</a></li>
-            <li><a href="#">FAQs</a></li>
-            <li><a href="#">Track Order</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>CONNECT WITH US</h4>
-          <ul style="display: flex; gap: 12px; font-size: 1.3rem;">
-            <li><a href="#"><i class="fab fa-instagram"></i></a></li>
-            <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
-            <li><a href="#"><i class="fab fa-pinterest-p"></i></a></li>
-          </ul>
-          <p style="margin-top: 15px; font-size: 0.75rem;">hello@redribbons.com</p>
-        </div>
+        <div class="footer-col"><h4>Red Ribbons</h4><ul><li><a href="#">Our Story</a></li><li><a href="#">Sustainability</a></li><li><a href="#">Press</a></li></ul></div>
+        <div class="footer-col"><h4>Gift by Occasion</h4><ul><li><a href="#">Birthday</a></li><li><a href="#">Anniversary</a></li><li><a href="#">Wedding</a></li><li><a href="#">Corporate</a></li></ul></div>
+        <div class="footer-col"><h4>Support</h4><ul><li><a href="#">Contact</a></li><li><a href="#">Shipping</a></li><li><a href="#">Returns</a></li><li><a href="#">FAQ</a></li></ul></div>
+        <div class="footer-col"><h4>Follow</h4><ul style="display:flex; gap:16px;"><li><a href="#"><i class="fab fa-instagram"></i></a></li><li><a href="#"><i class="fab fa-pinterest"></i></a></li><li><a href="#"><i class="fab fa-facebook"></i></a></li></ul><p style="margin-top:12px;">hello@redribbons.com</p></div>
       </div>
-      <div class="copyright">
-        © 2025 Red Ribbons — Elegant Gifting. Crafted with love. | Free shipping & midnight delivery available
-      </div>
+      <div class="copyright">© 2025 Red Ribbons — Elegant Gifting Studio. Free express delivery & midnight ribbon service.</div>
     </div>
   </footer>
 </div>
 
 <script>
-  // sample product data - rich collection (flowers, cakes, plants, personalised)
+  // Product collections (inspired by FNP aesthetic)
   const products = [
-    { id: 1, name: "Crimson Rose Bouquet", desc: "Hand-tied red roses & eucalyptus", price: "₹1799", oldPrice: "₹2499", icon: "🌹", cat: "flowers" },
-    { id: 2, name: "Velvet Truffle Cake", desc: "Rich chocolate ganache, red velvet sponge", price: "₹1099", oldPrice: "₹1499", icon: "🍰", cat: "cakes" },
-    { id: 3, name: "Ruby Jewelry Box", desc: "Personalized wooden box with initials", price: "₹2499", oldPrice: "₹3200", icon: "💎", cat: "personalised" },
-    { id: 4, name: "Burgundy Hamper", desc: "Sparkling wine, gourmet cookies, candle", price: "₹3999", oldPrice: "₹5299", icon: "🧺", cat: "hampers" },
-    { id: 5, name: "Silk Potted Orchid", desc: "Live phalaenopsis in beige ceramic", price: "₹1899", oldPrice: "₹2399", icon: "🌸", cat: "plants" },
-    { id: 6, name: "Letter & Love Frame", desc: "Personalized LED photo frame", price: "₹1599", oldPrice: "₹2099", icon: "🖼️", cat: "personalised" }
+    { id: 1, name: "Crimson Velvet Bouquet", desc: "Deep red roses, preserved eucalyptus", price: "₹1899", oldPrice: "₹2599", icon: "🌹" },
+    { id: 2, name: "Ribbon & Rosette Cake", desc: "Red velvet with cream cheese frosting", price: "₹1299", oldPrice: "₹1799", icon: "🍰" },
+    { id: 3, name: "Personalised Silk Sachet", desc: "Monogrammed beige pouch + rose oil", price: "₹1499", oldPrice: "₹2199", icon: "🎀" },
+    { id: 4, name: "Ruby Wine Hamper", desc: "Pinot Noir, truffles, artisan crackers", price: "₹3999", oldPrice: "₹5499", icon: "🍷" },
+    { id: 5, name: "Blush Orchid Plant", desc: "Live orchid in terracotta pot", price: "₹2099", oldPrice: "₹2799", icon: "🌺" },
+    { id: 6, name: "Heartfelt LED Frame", desc: "Custom photo with red ribbon detail", price: "₹2299", oldPrice: "₹2999", icon: "🖼️" }
   ];
-
   const combos = [
-    { id: 7, name: "Classic Red + Cake Combo", desc: "12 Red Roses + 1 lb Chocolate Cake", price: "₹2299", oldPrice: "₹2899", icon: "🎁🍫" },
-    { id: 8, name: "Anniversary Luxe Hamper", desc: "Wine, rose petals, perfume & mints", price: "₹4999", oldPrice: "₹6999", icon: "🥂" },
-    { id: 9, name: "Birthday Blast Bundle", desc: "Cupcakes + Teddy + Balloons", price: "₹2599", oldPrice: "₹3299", icon: "🧸🎈" },
-    { id: 10, name: "Self-Care Beige Box", desc: "Spa set, organic tea, vanilla candle", price: "₹2999", oldPrice: "₹3999", icon: "🕯️🧴" }
+    { id: 7, name: "Red Rose + Cake Duo", desc: "12 roses & 1 lb chocolate truffle cake", price: "₹2799", oldPrice: "₹3599", icon: "🌹🍰" },
+    { id: 8, name: "Anniversary Ribbon Chest", desc: "Sparkling wine, keepsake, chocolate box", price: "₹4599", oldPrice: "₹5999", icon: "🥂🎁" },
+    { id: 9, name: "Birthday Surprise Hamper", desc: "Balloons, mini cupcakes, plush bear", price: "₹2499", oldPrice: "₹3299", icon: "🧸🎈" },
+    { id: 10, name: "Luxury Self-Care Set", desc: "Candle, silk eye mask, rose tea", price: "₹3199", oldPrice: "₹3999", icon: "🕯️🌸" }
   ];
 
-  function renderProducts(containerId, items) {
+  function renderGrid(containerId, items) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = '';
@@ -541,110 +567,102 @@
       const card = document.createElement('div');
       card.className = 'product-card';
       card.innerHTML = `
-        <div class="product-img">
-          <span style="font-size: 3rem;">${item.icon}</span>
-        </div>
+        <div class="product-img"><span style="font-size: 3.3rem;">${item.icon}</span></div>
         <div class="product-info">
           <div class="product-title">${item.name}</div>
           <div class="product-desc">${item.desc}</div>
-          <div class="price-row">
-            <div><span class="price">${item.price}</span> <span class="old-price">${item.oldPrice}</span></div>
-            <button class="btn-add add-toast">Add to Bag</button>
-          </div>
+          <div class="price-row"><span class="price">${item.price}</span> <button class="btn-add add-toast">Add to bag</button></div>
+          <div style="font-size:0.7rem; text-decoration:line-through; color:#b29a88;">${item.oldPrice}</div>
         </div>
       `;
       container.appendChild(card);
     });
-    // add toast effect (just alert simulation for elegance)
     document.querySelectorAll('.add-toast').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        alert("✨ Added to your gift bag! ✨");
+        alert("❤️ Added to your gift bag! A red ribbon will be wrapped around your order.");
       });
     });
   }
 
-  // Unwrapping animation logic: ribbons sliding, then reveal main content
-  window.addEventListener('DOMContentLoaded', () => {
-    const overlay = document.getElementById('unwrapOverlay');
-    const ribbonBox = document.getElementById('ribbonBox');
-    const mainSite = document.getElementById('mainSite');
+  // ----- UNWRAP ANIMATION LOGIC: like opening a box with ribbon sliding -----
+  const giftScreen = document.getElementById('giftUnwrapScreen');
+  const giftContainer = document.getElementById('giftBoxContainer');
+  const giftBoxDiv = document.getElementById('giftBox');
+  const unwrapTextSpan = document.getElementById('unwrapText');
+  const mainSite = document.getElementById('mainSite');
+  let animationTriggered = false;
+
+  function startUnwrap() {
+    if (animationTriggered) return;
+    animationTriggered = true;
+
+    // Add class to lift lid + trigger body animation
+    giftBoxDiv.classList.add('unwrap-active');
+    // show ribbon slides
+    const magicRibbons = document.getElementById('magicRibbons');
+    if (magicRibbons) magicRibbons.style.opacity = '1';
     
-    // start animation after a short delay for dramatic effect
-    setTimeout(() => {
-      ribbonBox.classList.add('animate-unwrap');
-      // after ribbons slide, fade out overlay and show main website
-      setTimeout(() => {
-        overlay.style.opacity = '0';
-        overlay.style.visibility = 'hidden';
-        mainSite.style.opacity = '1';
-        // small extra to ensure hidden removal
-        setTimeout(() => {
-          overlay.style.display = 'none';
-        }, 1000);
-      }, 800);
-    }, 400);
+    // update text
+    unwrapTextSpan.innerHTML = "✨ ribbon unwrapped ✨";
     
-    // render products and combos
-    renderProducts('productGrid', products);
-    renderProducts('comboGrid', combos);
-    
-    // Add extra interactive menu (just aesthetic)
-    const occasionItems = document.querySelectorAll('.occasion-item');
-    occasionItems.forEach(item => {
-      item.addEventListener('click', () => {
-        alert("🎁 Browse " + item.innerText + " gifts — Coming soon with curated collections!");
-      });
-    });
-    // additional menu link simulation
-    const navLinksAll = document.querySelectorAll('.nav-links a');
-    navLinksAll.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        alert(`✨ Explore ${link.innerText} at Red Ribbons ✨`);
-      });
-    });
-    const footerLinks = document.querySelectorAll('.footer-col a');
-    footerLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        if(link.getAttribute('href') !== "#") return;
-        e.preventDefault();
-        alert("📦 More info coming soon!");
-      });
-    });
-    const searchIcon = document.querySelector('.icons-header .fa-search');
-    if(searchIcon) {
-      searchIcon.addEventListener('click', () => alert("🔍 Find the perfect gift by occasion, recipient, or price."));
+    // create floating sparkle effect
+    for (let i = 0; i < 12; i++) {
+      const spark = document.createElement('div');
+      spark.className = 'gift-sparkle';
+      spark.innerHTML = ['✨','🎀','❤️','⭐'][Math.floor(Math.random()*4)];
+      spark.style.left = Math.random() * 80 + 10 + '%';
+      spark.style.top = Math.random() * 70 + 15 + '%';
+      spark.style.fontSize = Math.random() * 24 + 16 + 'px';
+      spark.style.position = 'absolute';
+      spark.style.pointerEvents = 'none';
+      spark.style.animation = `fadeOutScale 0.6s ease-out forwards`;
+      giftScreen.appendChild(spark);
+      setTimeout(() => spark.remove(), 700);
     }
-  });
-</script>
+    // after animation complete, fade out gift screen, reveal main site
+    setTimeout(() => {
+      giftScreen.style.opacity = '0';
+      giftScreen.style.visibility = 'hidden';
+      mainSite.style.opacity = '1';
+      setTimeout(() => {
+        giftScreen.style.display = 'none';
+      }, 1200);
+    }, 1500);
+  }
 
-<!-- Extra style for subtle beige-red aesthetic  -->
-<style>
-  .main-site {
-    background: #fffcf9;
-  }
-  .product-card {
-    background: #FFFBF7;
-  }
-  .btn-primary, .occasion-item i {
-    transition: all 0.2s;
-  }
-  ::-webkit-scrollbar {
-    width: 8px;
-    background: #f1e2d8;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: #c97a66;
-    border-radius: 10px;
-  }
-  .hero-image img {
-    width: 100%;
-    background: linear-gradient(145deg, #f5e4d8, #faeeda);
-  }
-  .unwrap-overlay {
-    backdrop-filter: blur(1px);
-  }
-</style>
+  // Trigger unwrap by clicking on gift box or text
+  giftContainer.addEventListener('click', startUnwrap);
+  unwrapTextSpan.addEventListener('click', startUnwrap);
+  // also allow auto start after 0.7 sec to make it interactive but click preferred, but to match "as soon as we open the site" -> auto slight delay + clickable
+  // But user story: "as soon as we open the site let the website looks like its unwrapping with a red ribbon like opening a box"
+  // We'll add auto-unwrap on load? but better to show box & click for realism, but we can auto start after 0.2 sec to simulate automatic unwrap on open? 
+  // According to requirement: looks like unwrapping as soon as we open -> We'll auto start after 0.6 seconds for dramatic effect.
+  window.addEventListener('load', () => {
+    // add extra style for keyframes missing
+    const styleSheet = document.createElement("style");
+    styleSheet.textContent = ` @keyframes fadeOutScale { 0% { opacity:1; transform:scale(0.5); } 100% { opacity:0; transform:scale(1.8); } } `;
+    document.head.appendChild(styleSheet);
+    // auto unwrap after 0.65 seconds (so that box is seen then ribbon opens and lid lifts)
+    setTimeout(() => {
+      if (!animationTriggered) startUnwrap();
+    }, 650);
+  });
+
+  // render grids
+  renderGrid('productGrid', products);
+  renderGrid('comboGrid', combos);
+  
+  // interactive menus
+  document.querySelectorAll('.occasion-item').forEach(el => {
+    el.addEventListener('click', () => alert(`🎁 ${el.innerText.trim()} gifts — explore our red ribbon collection!`));
+  });
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', (e) => { e.preventDefault(); alert(`❤️ Explore ${link.innerText} at Red Ribbons`); });
+  });
+  document.querySelector('.shop-now-btn')?.addEventListener('click', () => { window.scrollTo({top: document.getElementById('productGrid').offsetTop-50, behavior: 'smooth'}); });
+  const searchIcon = document.querySelector('.icons-header .fa-search');
+  if(searchIcon) searchIcon.addEventListener('click', () => alert("🔍 Search for gifts by name, occasion, or recipient."));
+</script>
 </body>
 </html>
