@@ -1,517 +1,1722 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Red Ribbons | Luxury Gifting</title>
-  <!-- Google Fonts + Font Awesome 6 -->
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=Poppins:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- GSAP for smooth animations -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cherry Blossom — Moments Blooming into Memories</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Poppins:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & ROOT ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --sakura:    #F7D6E0;
+  --deep-rose: #C76B84;
+  --ivory:     #FFF9F5;
+  --champagne: #F3E7DC;
+  --gold:      #D8B98A;
+  --dark:      #2D1B22;
+  --text:      #4A2E3A;
+  --muted:     #9B7A85;
+  --rose-pale: #FDF0F4;
+}
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body {
+  background: var(--ivory);
+  color: var(--text);
+  font-family: 'Poppins', sans-serif;
+  overflow-x: hidden;
+}
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+img { display: block; width: 100%; }
+button { cursor: pointer; }
 
-    body {
-      background-color: #FFF9F2;
-      font-family: 'Poppins', sans-serif;
-      color: #2C2420;
-      overflow-x: hidden;
-    }
+/* ── LOADER ── */
+#loader {
+  position: fixed; inset: 0;
+  background: var(--ivory);
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  pointer-events: all;
+  transition: opacity 1.2s ease;
+}
+#loader.fade-out { opacity: 0; pointer-events: none; }
+#loader-logo {
+  opacity: 0; transform: translateY(20px);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  letter-spacing: .35em;
+  color: var(--deep-rose);
+  font-weight: 300;
+  text-transform: uppercase;
+  transition: opacity 1s ease, transform 1s ease;
+}
+#loader-logo.show { opacity: 1; transform: translateY(0); }
+#loader-tagline {
+  opacity: 0;
+  font-size: .68rem;
+  letter-spacing: .28em;
+  color: var(--muted);
+  margin-top: .7rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 300;
+  text-transform: uppercase;
+  font-style: italic;
+  transition: opacity .8s ease .2s;
+}
+#loader-tagline.show { opacity: 1; }
+#loader-bar {
+  width: 140px; height: 1px;
+  background: var(--sakura);
+  margin-top: 2.5rem;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity .5s ease .4s;
+}
+#loader-bar.show { opacity: 1; }
+#loader-bar-fill {
+  height: 100%; width: 0;
+  background: linear-gradient(90deg, var(--sakura), var(--deep-rose));
+  transition: width 2s cubic-bezier(.4, 0, .2, 1);
+}
+#loader-bar-fill.fill { width: 100%; }
 
-    h1, h2, h3, h4, .font-serif {
-      font-family: 'Playfair Display', serif;
-    }
+/* ── PETAL CANVAS ── */
+#petal-canvas {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+#petal-canvas.show { opacity: 1; }
 
-    .font-garamond {
-      font-family: 'Cormorant Garamond', serif;
-    }
+/* ── RIBBON ── */
+#ribbon {
+  position: fixed; top: 0; left: -100%;
+  width: 200%; height: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(199,107,132,.5),
+    rgba(216,185,138,.7),
+    rgba(247,214,224,.9),
+    rgba(216,185,138,.7),
+    rgba(199,107,132,.5),
+    transparent);
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .5s ease, left 1.6s cubic-bezier(.4,0,.2,1);
+}
+#ribbon.sweep { left: 0; opacity: 1; }
+#ribbon.hide { opacity: 0; }
 
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #F5E6D3; }
-    ::-webkit-scrollbar-thumb { background: #C9A46C; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #A11217; }
+/* ── FLOATING AMBIENT PETALS ── */
+.fp {
+  position: fixed;
+  pointer-events: none;
+  z-index: 99;
+  opacity: 0;
+  animation: fpFall linear forwards;
+}
+@keyframes fpFall {
+  0%   { transform: translateY(-20px) rotate(0deg)   translateX(0);    opacity: .7; }
+  100% { transform: translateY(110vh) rotate(720deg) translateX(60px); opacity: 0;  }
+}
 
-    /* Glassmorphism */
-    .glass {
-      background: rgba(255, 249, 242, 0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(201, 164, 108, 0.25);
-    }
+/* ── NAVBAR ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 1.2rem 4rem;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all .4s ease;
+}
+nav.scrolled {
+  background: rgba(255,249,245,.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 1px 30px rgba(199,107,132,.08);
+  border-bottom: 1px solid rgba(247,214,224,.45);
+  padding: .9rem 4rem;
+}
+.nav-logo { display: flex; align-items: center; gap: .8rem; cursor: pointer; }
+.nav-logo svg { width: 38px; height: 38px; flex-shrink: 0; }
+.nav-brand {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  letter-spacing: .28em;
+  color: var(--deep-rose);
+  font-weight: 400;
+  text-transform: uppercase;
+}
+.nav-links {
+  display: flex; align-items: center; gap: 2.2rem;
+}
+.nav-links a {
+  font-size: .68rem;
+  letter-spacing: .2em;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--text);
+  opacity: .75;
+  transition: opacity .3s, color .3s;
+  position: relative;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute; bottom: -4px; left: 0;
+  width: 0; height: 1px;
+  background: var(--deep-rose);
+  transition: width .35s ease;
+}
+.nav-links a:hover { opacity: 1; color: var(--deep-rose); }
+.nav-links a:hover::after { width: 100%; }
+.nav-icons { display: flex; align-items: center; gap: 1.3rem; }
+.nav-icons button {
+  background: none; border: none;
+  color: var(--text); opacity: .7;
+  font-size: 1rem;
+  transition: opacity .3s, color .3s, transform .2s;
+  padding: .3rem;
+}
+.nav-icons button:hover { opacity: 1; color: var(--deep-rose); transform: scale(1.1); }
+.hamburger { display: none; flex-direction: column; gap: 5px; }
+.hamburger span {
+  display: block; width: 22px; height: 1px;
+  background: var(--text); transition: all .3s;
+}
 
-    /* Button Styles */
-    .btn-primary {
-      background: #A11217;
-      color: white;
-      padding: 12px 32px;
-      border-radius: 40px;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 4px 14px rgba(161, 18, 23, 0.3);
-    }
-    .btn-primary:hover {
-      background: #7A0E12;
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(161, 18, 23, 0.4);
-    }
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--ivory) 0%, #FDF3F7 40%, #F9E8EE 70%, var(--champagne) 100%);
+}
+.hero-orb {
+  position: absolute; border-radius: 50%;
+  pointer-events: none;
+  filter: blur(90px);
+}
+.hero-content {
+  position: relative; z-index: 2;
+  text-align: center;
+  max-width: 820px;
+  padding: 8rem 2rem 4rem;
+}
+.hero-eyebrow {
+  display: block;
+  font-size: .63rem; letter-spacing: .38em;
+  text-transform: uppercase;
+  color: var(--deep-rose);
+  font-family: 'Poppins', sans-serif; font-weight: 400;
+  margin-bottom: 1.4rem;
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+.hero-eyebrow.show { opacity: 1; transform: translateY(0); }
+.hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3.2rem, 7.5vw, 6.5rem);
+  font-weight: 400; line-height: 1.04;
+  color: var(--dark);
+  margin-bottom: 1.6rem;
+  opacity: 0; transform: translateY(40px);
+  transition: opacity 1s ease .2s, transform 1s ease .2s;
+}
+.hero-title.show { opacity: 1; transform: translateY(0); }
+.hero-title em { font-style: italic; color: var(--deep-rose); }
+.hero-sub {
+  font-size: .85rem; line-height: 1.9;
+  letter-spacing: .08em;
+  color: var(--muted);
+  font-family: 'Poppins', sans-serif; font-weight: 300;
+  margin-bottom: 3rem;
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 1s ease .4s, transform 1s ease .4s;
+}
+.hero-sub.show { opacity: 1; transform: translateY(0); }
+.hero-ctas {
+  display: flex; align-items: center; justify-content: center; gap: 1.5rem; flex-wrap: wrap;
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 1s ease .6s, transform 1s ease .6s;
+}
+.hero-ctas.show { opacity: 1; transform: translateY(0); }
+.hero-scroll {
+  position: absolute; bottom: 2.5rem; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: .6rem;
+  opacity: 0; transition: opacity 1s ease 1.2s;
+}
+.hero-scroll.show { opacity: 1; }
+.scroll-line {
+  width: 1px; height: 52px;
+  background: linear-gradient(to bottom, var(--deep-rose), transparent);
+  animation: scrollPulse 2.2s ease infinite;
+}
+@keyframes scrollPulse {
+  0%, 100% { opacity: .3; transform: scaleY(1); }
+  50%       { opacity: 1;  transform: scaleY(.75); }
+}
+.scroll-label {
+  font-size: .58rem; letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--muted); font-family: 'Poppins', sans-serif;
+}
 
-    .btn-outline {
-      background: transparent;
-      border: 2px solid #A11217;
-      color: #A11217;
-      padding: 10px 28px;
-      border-radius: 40px;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-    .btn-outline:hover {
-      background: #A11217;
-      color: white;
-      transform: translateY(-2px);
-    }
+/* ── BUTTONS ── */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: .6rem;
+  padding: 1rem 2.6rem;
+  background: var(--deep-rose); color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: .7rem; letter-spacing: .22em;
+  text-transform: uppercase; font-weight: 400;
+  border: 1px solid transparent;
+  position: relative; overflow: hidden;
+  transition: transform .35s ease, box-shadow .35s ease;
+}
+.btn-primary::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,.12);
+  transform: translateX(-100%);
+  transition: transform .4s ease;
+}
+.btn-primary:hover::before { transform: translateX(0); }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 18px 45px rgba(199,107,132,.38); }
 
-    /* Card Hover Effect */
-    .card-hover {
-      transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-    }
-    .card-hover:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 25px 35px -12px rgba(0, 0, 0, 0.15);
-    }
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: .6rem;
+  padding: 1rem 2.6rem;
+  border: 1px solid var(--deep-rose); color: var(--deep-rose);
+  font-family: 'Poppins', sans-serif;
+  font-size: .7rem; letter-spacing: .22em;
+  text-transform: uppercase; font-weight: 400;
+  transition: background .35s, color .35s, transform .35s, box-shadow .35s;
+}
+.btn-ghost:hover {
+  background: var(--deep-rose); color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 18px 45px rgba(199,107,132,.25);
+}
 
-    /* Section Title Underline */
-    .section-title {
-      font-size: 2.5rem;
-      font-weight: 600;
-      text-align: center;
-      margin-bottom: 1rem;
-      position: relative;
-      display: inline-block;
-    }
-    .section-title:after {
-      content: '';
-      position: absolute;
-      bottom: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 70px;
-      height: 2px;
-      background: linear-gradient(90deg, #C9A46C, #A11217);
-      border-radius: 2px;
-    }
+.btn-gold {
+  display: inline-flex; align-items: center; gap: .6rem;
+  padding: 1rem 2.6rem;
+  background: var(--gold); color: var(--dark);
+  font-family: 'Poppins', sans-serif;
+  font-size: .7rem; letter-spacing: .22em;
+  text-transform: uppercase; font-weight: 400;
+  border: 1px solid transparent;
+  transition: background .35s, color .35s, border-color .35s, transform .35s;
+}
+.btn-gold:hover {
+  background: transparent; color: var(--gold);
+  border-color: var(--gold); transform: translateY(-3px);
+}
 
-    /* Ribbon Animation Particles */
-    .ribbon-particle {
-      position: fixed;
-      pointer-events: none;
-      z-index: 10001;
-    }
+.btn-dark {
+  display: inline-flex; align-items: center; gap: .6rem;
+  padding: .8rem 2rem;
+  border: 1px solid rgba(247,214,224,.3); color: rgba(247,214,224,.6);
+  font-family: 'Poppins', sans-serif;
+  font-size: .68rem; letter-spacing: .18em;
+  text-transform: uppercase; font-weight: 300;
+  transition: all .35s;
+}
+.btn-dark:hover {
+  border-color: var(--sakura); color: var(--sakura);
+}
 
-    /* Floating Ribbon Decor */
-    @keyframes floatRibbon {
-      0% { transform: translateY(-100vh) rotate(0deg); opacity: 0; }
-      10% { opacity: 0.4; }
-      90% { opacity: 0.4; }
-      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-    }
-  </style>
+/* ── SECTION COMMONS ── */
+section { padding: 7rem 4rem; }
+.sec-eyebrow {
+  display: block;
+  font-size: .63rem; letter-spacing: .38em;
+  text-transform: uppercase;
+  color: var(--deep-rose); font-family: 'Poppins', sans-serif; font-weight: 400;
+  margin-bottom: .9rem;
+}
+.sec-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
+  font-weight: 400; line-height: 1.15;
+  color: var(--dark); margin-bottom: 1rem;
+}
+.sec-title em { font-style: italic; color: var(--deep-rose); }
+.sec-sub {
+  font-size: .82rem; line-height: 1.95;
+  color: var(--muted); font-family: 'Poppins', sans-serif; font-weight: 300;
+}
+
+/* ── REVEAL ANIMATION ── */
+.reveal {
+  opacity: 0; transform: translateY(44px);
+  transition: opacity .85s ease, transform .85s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── MARQUEE ── */
+.marquee-strip {
+  background: var(--deep-rose); padding: .8rem 0;
+  overflow: hidden;
+}
+.marquee-track {
+  display: flex; gap: 3rem;
+  white-space: nowrap;
+  animation: marqueeScroll 28s linear infinite;
+}
+.marquee-item {
+  font-size: .63rem; letter-spacing: .28em;
+  text-transform: uppercase; color: #fff;
+  font-family: 'Poppins', sans-serif; font-weight: 300;
+  opacity: .92;
+  display: inline-flex; align-items: center; gap: 1.5rem;
+}
+.m-dot {
+  width: 4px; height: 4px; background: rgba(255,255,255,.5);
+  border-radius: 50%; display: inline-block; flex-shrink: 0;
+}
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ── COLLECTIONS ── */
+#collections { background: var(--ivory); }
+.collections-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 3.5rem; flex-wrap: wrap; gap: 1.5rem;
+}
+.collections-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto auto;
+  gap: 1.5rem;
+}
+.coll-card {
+  position: relative; overflow: hidden;
+  cursor: pointer; aspect-ratio: 3/4;
+  background: var(--champagne);
+}
+.coll-card.wide  { grid-column: span 2; aspect-ratio: 16/9; }
+.coll-card .cbg {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 5rem;
+  transition: transform .65s cubic-bezier(.4,0,.2,1);
+}
+.coll-card:hover .cbg { transform: scale(1.08); }
+.coll-card .cov {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(45,27,34,.78) 0%, rgba(45,27,34,.08) 55%, transparent 100%);
+}
+.coll-card .cc {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 2rem 1.8rem;
+}
+.cc-cat {
+  font-size: .56rem; letter-spacing: .32em;
+  text-transform: uppercase; color: rgba(247,214,224,.75);
+  font-family: 'Poppins', sans-serif; margin-bottom: .5rem;
+}
+.cc-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.45rem; color: #fff; font-weight: 400; line-height: 1.2;
+}
+.cc-link {
+  display: inline-flex; align-items: center; gap: .4rem;
+  margin-top: .8rem;
+  font-size: .6rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--sakura);
+  font-family: 'Poppins', sans-serif;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity .3s, transform .3s;
+}
+.coll-card:hover .cc-link { opacity: 1; transform: translateY(0); }
+
+/* ── PRODUCT CARDS (BEST SELLERS) ── */
+#bestsellers { background: var(--champagne); }
+.bs-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 3.5rem; flex-wrap: wrap; gap: 1.5rem;
+}
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+}
+.prod-card { position: relative; cursor: pointer; }
+.prod-img {
+  position: relative; overflow: hidden;
+  aspect-ratio: 3/4;
+  margin-bottom: 1.3rem;
+}
+.prod-img-fill {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.5rem;
+  transition: transform .55s cubic-bezier(.4,0,.2,1);
+}
+.prod-card:hover .prod-img-fill { transform: scale(1.06); }
+.prod-actions {
+  position: absolute; top: .9rem; right: .9rem;
+  display: flex; flex-direction: column; gap: .5rem;
+  opacity: 0; transform: translateX(10px);
+  transition: opacity .3s, transform .3s;
+}
+.prod-card:hover .prod-actions { opacity: 1; transform: translateX(0); }
+.act-btn {
+  width: 36px; height: 36px;
+  background: rgba(255,249,245,.92); backdrop-filter: blur(12px);
+  border: 1px solid rgba(199,107,132,.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; color: var(--text);
+  transition: background .25s, color .25s;
+}
+.act-btn:hover { background: var(--deep-rose); color: #fff; }
+.qv-btn {
+  position: absolute; bottom: .9rem; left: .9rem; right: .9rem;
+  background: rgba(255,249,245,.93); backdrop-filter: blur(12px);
+  border: none; border-top: 1px solid rgba(199,107,132,.15);
+  padding: .65rem;
+  font-size: .6rem; letter-spacing: .24em;
+  text-transform: uppercase; font-family: 'Poppins', sans-serif; color: var(--text);
+  opacity: 0; transform: translateY(6px);
+  transition: opacity .3s, transform .3s;
+}
+.prod-card:hover .qv-btn { opacity: 1; transform: translateY(0); }
+.prod-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.12rem; color: var(--dark); font-weight: 400;
+  margin-bottom: .3rem;
+  transition: color .3s;
+}
+.prod-card:hover .prod-name { color: var(--deep-rose); }
+.prod-sub {
+  font-size: .67rem; color: var(--muted);
+  letter-spacing: .1em; font-family: 'Poppins', sans-serif;
+  margin-bottom: .55rem;
+}
+.prod-price {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; color: var(--deep-rose); font-weight: 400;
+}
+
+/* ── SEASONAL ── */
+#seasonal {
+  background: linear-gradient(135deg, var(--rose-pale), var(--champagne));
+  overflow: hidden; position: relative;
+}
+.seasonal-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 6rem; align-items: center;
+}
+.seasonal-visual { position: relative; }
+.seasonal-frame {
+  width: 100%; aspect-ratio: 4/5;
+  background: linear-gradient(145deg, var(--sakura) 0%, #F0C8D8 50%, var(--champagne) 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 6rem; position: relative; overflow: hidden;
+}
+.seasonal-frame::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(199,107,132,.12), transparent 60%);
+}
+.seasonal-badge {
+  position: absolute; bottom: -1px; right: -1px;
+  background: var(--deep-rose); color: #fff;
+  padding: 1.4rem 2rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem; font-style: italic; font-weight: 300;
+}
+.seasonal-feats { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1.2rem; }
+.feat-item { display: flex; align-items: flex-start; gap: 1rem; }
+.feat-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--deep-rose); margin-top: .5rem; flex-shrink: 0;
+}
+.feat-text {
+  font-size: .78rem; line-height: 1.75;
+  color: var(--muted); font-family: 'Poppins', sans-serif; font-weight: 300;
+}
+
+/* ── PERSONALIZED ── */
+#personalized {
+  background: var(--dark); position: relative; overflow: hidden;
+}
+.personal-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 6rem; align-items: center;
+}
+.personal-text .sec-eyebrow { color: var(--gold); }
+.personal-text .sec-title   { color: var(--sakura); }
+.personal-text .sec-title em { color: var(--gold); }
+.personal-text .sec-sub      { color: rgba(247,214,224,.5); }
+.personal-cards-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+.p-card {
+  padding: 2rem 1.6rem;
+  border: 1px solid rgba(247,214,224,.14);
+  position: relative; overflow: hidden;
+  cursor: pointer;
+  transition: border-color .4s, transform .4s;
+}
+.p-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(247,214,224,.05), transparent);
+  opacity: 0; transition: opacity .4s;
+}
+.p-card:hover { border-color: rgba(247,214,224,.38); transform: translateY(-4px); }
+.p-card:hover::before { opacity: 1; }
+.p-icon { font-size: 1.9rem; margin-bottom: 1rem; display: block; }
+.p-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem; color: var(--sakura); font-weight: 400; margin-bottom: .5rem;
+}
+.p-desc {
+  font-size: .7rem; line-height: 1.8;
+  color: rgba(247,214,224,.42); font-family: 'Poppins', sans-serif; font-weight: 300;
+}
+.personal-cta-group {
+  display: flex; align-items: center; gap: 1.5rem;
+  margin-top: 2.5rem; flex-wrap: wrap;
+}
+.dark-link {
+  font-size: .68rem; letter-spacing: .18em;
+  text-transform: uppercase; color: rgba(247,214,224,.38);
+  font-family: 'Poppins', sans-serif; font-weight: 300;
+  transition: color .3s;
+}
+.dark-link:hover { color: rgba(247,214,224,.7); }
+
+/* ── HAMPERS ── */
+#hampers { background: var(--ivory); }
+.hampers-header { text-align: center; max-width: 600px; margin: 0 auto 4rem; }
+.hampers-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 1fr;
+  gap: 2rem; align-items: start;
+}
+.ham-card { cursor: pointer; }
+.ham-img {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.8rem; aspect-ratio: 1;
+  overflow: hidden; position: relative;
+  transition: transform .5s ease;
+}
+.ham-card.tall .ham-img { aspect-ratio: 2/3; }
+.ham-card:hover .ham-img { transform: scale(1.04); }
+.ham-content { padding: 1.6rem 0 0; }
+.ham-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem; color: var(--dark); font-weight: 400; margin-bottom: .5rem;
+}
+.ham-desc {
+  font-size: .72rem; line-height: 1.85;
+  color: var(--muted); font-family: 'Poppins', sans-serif; font-weight: 300; margin-bottom: .9rem;
+}
+.ham-price {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; color: var(--deep-rose); font-weight: 400;
+}
+.ham-sub-grid {
+  display: flex; flex-direction: column; gap: 2rem;
+}
+
+/* ── ABOUT ── */
+#about { background: var(--ivory); overflow: hidden; }
+.about-grid {
+  display: grid; grid-template-columns: 1fr 1.15fr;
+  gap: 6rem; align-items: center;
+}
+.about-visual { position: relative; }
+.about-img {
+  width: 100%; aspect-ratio: 3/4;
+  background: linear-gradient(145deg, var(--sakura) 0%, #EFC5D5 50%, var(--champagne) 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 7rem; position: relative; overflow: hidden;
+}
+.about-img::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 60%, rgba(199,107,132,.18));
+}
+.about-stat {
+  position: absolute; right: -1.5rem; bottom: 4rem;
+  background: #fff;
+  border: 1px solid rgba(247,214,224,.7);
+  padding: 1.6rem 2.2rem;
+  box-shadow: 0 20px 55px rgba(199,107,132,.1);
+}
+.stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.6rem; color: var(--deep-rose); line-height: 1;
+}
+.stat-lbl {
+  font-size: .62rem; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--muted);
+  font-family: 'Poppins', sans-serif; margin-top: .35rem;
+}
+.about-vals { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+.val-item {
+  padding: 1.5rem 1.5rem;
+  border-left: 2px solid var(--sakura);
+  transition: border-color .35s;
+}
+.val-item:hover { border-color: var(--deep-rose); }
+.val-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem; color: var(--dark); font-weight: 400; margin-bottom: .35rem;
+}
+.val-desc {
+  font-size: .73rem; line-height: 1.85;
+  color: var(--muted); font-family: 'Poppins', sans-serif; font-weight: 300;
+}
+
+/* ── TESTIMONIALS ── */
+#testimonials {
+  background: linear-gradient(135deg, var(--rose-pale), var(--ivory));
+  text-align: center;
+}
+.test-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 2rem; margin-top: 4rem;
+}
+.test-card {
+  background: rgba(255,249,245,.82);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(247,214,224,.52);
+  padding: 2.6rem 2.2rem;
+  text-align: left;
+  transition: transform .4s, box-shadow .4s, border-color .4s;
+}
+.test-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 55px rgba(199,107,132,.14);
+  border-color: rgba(199,107,132,.32);
+}
+.t-stars { color: var(--gold); font-size: .8rem; margin-bottom: .9rem; letter-spacing: .08em; }
+.t-quote {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem; font-style: italic;
+  color: var(--text); line-height: 1.85; margin-bottom: 1.6rem; font-weight: 300;
+}
+.t-author { display: flex; align-items: center; gap: .9rem; }
+.t-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--sakura), var(--deep-rose));
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; color: #fff;
+  font-family: 'Poppins', sans-serif; font-weight: 500; flex-shrink: 0;
+}
+.t-name {
+  font-size: .78rem; font-weight: 500;
+  color: var(--dark); font-family: 'Poppins', sans-serif;
+}
+.t-city { font-size: .64rem; color: var(--muted); font-family: 'Poppins', sans-serif; }
+
+/* ── GALLERY ── */
+#gallery { background: var(--champagne); }
+.gallery-header { text-align: center; margin-bottom: 3rem; }
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: .8rem;
+}
+.gal-item {
+  aspect-ratio: 1; overflow: hidden; cursor: pointer;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem;
+  transition: transform .4s;
+}
+.gal-item:hover { transform: scale(1.03); }
+.gal-item .gal-over {
+  position: absolute; inset: 0;
+  background: rgba(199,107,132,0);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; color: #fff;
+  opacity: 0;
+  transition: background .35s, opacity .35s;
+}
+.gal-item:hover .gal-over { background: rgba(199,107,132,.3); opacity: 1; }
+
+/* ── CTA BAND ── */
+#cta-band {
+  background: var(--deep-rose);
+  padding: 6rem 4rem;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.cta-band-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  color: #fff; font-weight: 400; font-style: italic;
+  margin-bottom: 1rem; line-height: 1.2;
+}
+.cta-band-sub {
+  font-size: .78rem; color: rgba(255,255,255,.7);
+  font-family: 'Poppins', sans-serif; font-weight: 300;
+  letter-spacing: .12em; margin-bottom: 2.5rem;
+}
+.btn-white {
+  display: inline-flex; align-items: center; gap: .6rem;
+  padding: 1rem 2.6rem;
+  background: #fff; color: var(--deep-rose);
+  font-family: 'Poppins', sans-serif;
+  font-size: .7rem; letter-spacing: .22em;
+  text-transform: uppercase; font-weight: 500;
+  border: 1px solid transparent;
+  transition: background .35s, color .35s, border-color .35s, transform .35s;
+}
+.btn-white:hover {
+  background: transparent; color: #fff;
+  border-color: rgba(255,255,255,.6); transform: translateY(-3px);
+}
+
+/* ── FOOTER ── */
+footer {
+  background: var(--dark);
+  padding: 6rem 4rem 2.5rem;
+}
+.footer-top {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 4rem; margin-bottom: 4.5rem;
+}
+.footer-brand {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem; letter-spacing: .25em;
+  color: var(--sakura); font-weight: 300;
+  text-transform: uppercase; margin-bottom: .8rem;
+}
+.footer-slogan {
+  font-size: .7rem; letter-spacing: .18em;
+  color: rgba(247,214,224,.38);
+  font-family: 'Poppins', sans-serif; font-weight: 300;
+  font-style: italic; margin-bottom: 1.5rem;
+}
+.footer-desc {
+  font-size: .74rem; line-height: 1.95;
+  color: rgba(247,214,224,.38);
+  font-family: 'Poppins', sans-serif; font-weight: 300;
+  max-width: 290px;
+}
+.newsletter-box {
+  margin-top: 2.2rem;
+  background: rgba(247,214,224,.05);
+  border: 1px solid rgba(247,214,224,.12);
+  padding: 2rem;
+}
+.nl-h4 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.25rem; color: var(--sakura); font-weight: 400; margin-bottom: .5rem;
+}
+.nl-p {
+  font-size: .7rem; line-height: 1.75;
+  color: rgba(247,214,224,.38);
+  font-family: 'Poppins', sans-serif; font-weight: 300; margin-bottom: 1.2rem;
+}
+.nl-form {
+  display: flex;
+  border: 1px solid rgba(247,214,224,.18); overflow: hidden;
+}
+.nl-form input {
+  flex: 1; background: transparent; border: none; outline: none;
+  padding: .8rem 1rem;
+  font-size: .7rem; color: var(--sakura);
+  font-family: 'Poppins', sans-serif; font-weight: 300;
+}
+.nl-form input::placeholder { color: rgba(247,214,224,.25); }
+.nl-form button {
+  background: var(--deep-rose); border: none; color: #fff;
+  padding: .8rem 1.2rem;
+  font-size: .62rem; letter-spacing: .18em;
+  text-transform: uppercase; font-family: 'Poppins', sans-serif; font-weight: 400;
+  white-space: nowrap; transition: background .3s;
+}
+.nl-form button:hover { background: #b5607a; }
+.footer-col h4 {
+  font-size: .6rem; letter-spacing: .32em;
+  text-transform: uppercase; color: var(--gold);
+  font-family: 'Poppins', sans-serif; font-weight: 400;
+  margin-bottom: 1.6rem;
+}
+.footer-col ul { display: flex; flex-direction: column; gap: .75rem; }
+.footer-col ul a {
+  font-size: .74rem;
+  color: rgba(247,214,224,.38);
+  font-family: 'Poppins', sans-serif; font-weight: 300;
+  transition: color .3s;
+}
+.footer-col ul a:hover { color: var(--sakura); }
+.footer-bottom {
+  border-top: 1px solid rgba(247,214,224,.1);
+  padding-top: 2rem;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.footer-copy {
+  font-size: .66rem;
+  color: rgba(247,214,224,.22);
+  font-family: 'Poppins', sans-serif; font-weight: 300; letter-spacing: .08em;
+}
+.social-links { display: flex; gap: .8rem; }
+.soc {
+  width: 38px; height: 38px;
+  border: 1px solid rgba(247,214,224,.15);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(247,214,224,.4); font-size: .75rem;
+  transition: all .3s;
+}
+.soc:hover {
+  border-color: var(--deep-rose);
+  color: var(--sakura);
+  background: rgba(199,107,132,.15);
+}
+
+/* ── MOBILE NAV MENU ── */
+.mobile-menu {
+  display: none;
+  position: fixed; inset: 0;
+  background: var(--ivory); z-index: 999;
+  flex-direction: column; align-items: center; justify-content: center; gap: 2rem;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem; color: var(--dark); letter-spacing: .15em;
+  transition: color .3s;
+}
+.mobile-menu a:hover { color: var(--deep-rose); }
+.close-menu {
+  position: absolute; top: 2rem; right: 2rem;
+  background: none; border: none; font-size: 1.5rem; color: var(--text);
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width: 1100px) {
+  nav { padding: 1.1rem 2.5rem; }
+  nav.scrolled { padding: .85rem 2.5rem; }
+  section { padding: 6rem 2.5rem; }
+  #cta-band { padding: 5rem 2.5rem; }
+  footer { padding: 5rem 2.5rem 2rem; }
+  .collections-grid { grid-template-columns: repeat(2,1fr); }
+  .coll-card.wide { aspect-ratio: 16/10; }
+  .products-grid { grid-template-columns: repeat(2,1fr); }
+  .hampers-grid { grid-template-columns: 1fr 1fr; }
+  .ham-card.tall { grid-column: span 2; }
+  .ham-card.tall .ham-img { aspect-ratio: 16/9; }
+  .footer-top { grid-template-columns: 1fr 1fr; gap: 3rem; }
+  .test-grid { grid-template-columns: 1fr 1fr; }
+  .gallery-grid { grid-template-columns: repeat(3,1fr); }
+}
+@media(max-width: 900px) {
+  .nav-links { display: none; }
+  .hamburger { display: flex; background: none; border: none; }
+  .seasonal-grid,
+  .personal-grid,
+  .about-grid { grid-template-columns: 1fr; gap: 3.5rem; }
+  .personal-grid .personal-text { order: 2; }
+  .about-stat { right: -.5rem; }
+}
+@media(max-width: 640px) {
+  nav { padding: 1rem 1.5rem; }
+  nav.scrolled { padding: .8rem 1.5rem; }
+  section { padding: 5rem 1.5rem; }
+  #cta-band { padding: 4rem 1.5rem; }
+  footer { padding: 4rem 1.5rem 2rem; }
+  .collections-grid { grid-template-columns: 1fr; }
+  .coll-card.wide { grid-column: span 1; aspect-ratio: 4/3; }
+  .products-grid { grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  .hampers-grid { grid-template-columns: 1fr; }
+  .ham-card.tall { grid-column: span 1; }
+  .ham-card.tall .ham-img { aspect-ratio: 3/4; }
+  .personal-cards-grid { grid-template-columns: 1fr 1fr; }
+  .test-grid { grid-template-columns: 1fr; }
+  .gallery-grid { grid-template-columns: repeat(2,1fr); }
+  .footer-top { grid-template-columns: 1fr; gap: 2.5rem; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; }
+  .hero-title { font-size: clamp(2.5rem,10vw,3.5rem); }
+}
+</style>
 </head>
 <body>
 
-<!-- RIBBON UNWRAP ANIMATION OVERLAY -->
-<div id="unwrapOverlay" class="fixed inset-0 z-[9999] flex items-center justify-center bg-[#F5E6D3] transition-opacity duration-1000" style="background: linear-gradient(145deg, #FDF8F2, #F5E6D3);">
-  <div class="relative w-80 h-80 md:w-[450px] md:h-[450px] perspective-1000">
-    <!-- Gift Box Body -->
-    <div class="absolute bottom-0 left-0 w-full h-2/3 bg-gradient-to-br from-[#A11217] to-[#7A0E12] rounded-3xl shadow-2xl"></div>
-    
-    <!-- Gift Box Lid -->
-    <div id="giftLid" class="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-br from-[#B81A1F] to-[#8B1015] rounded-t-3xl shadow-xl origin-bottom" style="transform-style: preserve-3d;"></div>
-    
-    <!-- Horizontal Ribbon -->
-    <div id="ribbonH" class="absolute left-0 w-full h-12 bg-gradient-to-r from-[#C9A46C] via-[#D4B88C] to-[#C9A46C] shadow-lg" style="top: 50%; transform: translateY(-50%);"></div>
-    
-    <!-- Vertical Ribbon -->
-    <div id="ribbonV" class="absolute top-0 w-12 h-full bg-gradient-to-b from-[#C9A46C] via-[#D4B88C] to-[#C9A46C] shadow-lg" style="left: 50%; transform: translateX(-50%);"></div>
-    
-    <!-- Bow Left -->
-    <div id="bowLeft" class="absolute w-20 h-20 rounded-full bg-gradient-to-br from-[#D4B88C] to-[#B8925A] shadow-xl" style="top: 38%; left: 38%;"></div>
-    
-    <!-- Bow Right -->
-    <div id="bowRight" class="absolute w-20 h-20 rounded-full bg-gradient-to-bl from-[#D4B88C] to-[#B8925A] shadow-xl" style="top: 38%; right: 38%;"></div>
-    
-    <!-- Bow Center Knot -->
-    <div id="bowCenter" class="absolute w-10 h-10 bg-[#C9A46C] rounded-lg shadow-md z-10" style="top: 44%; left: 50%; transform: translate(-50%, -50%) rotate(45deg);"></div>
-    
-    <!-- Ribbon Tails -->
-    <div id="tailLeft" class="absolute w-32 h-6 bg-gradient-to-r from-[#D4B88C] to-[#C9A46C] rounded-full shadow-md origin-left" style="top: 52%; left: 42%; transform: rotate(-20deg);"></div>
-    <div id="tailRight" class="absolute w-32 h-6 bg-gradient-to-l from-[#D4B88C] to-[#C9A46C] rounded-full shadow-md origin-right" style="top: 52%; right: 42%; transform: rotate(20deg);"></div>
-    
-    <!-- Sparkle Text -->
-    <div id="unwrapText" class="absolute -bottom-16 left-1/2 transform -translate-x-1/2 whitespace-nowrap opacity-0">
-      <span class="font-serif text-2xl md:text-3xl text-[#A11217] tracking-wide">✨ Red Ribbons ✨</span>
+<!-- ══════════════ LOADER ══════════════ -->
+<div id="loader">
+  <div id="loader-logo">Cherry Blossom</div>
+  <div id="loader-tagline">Moments blooming into memories</div>
+  <div id="loader-bar"><div id="loader-bar-fill"></div></div>
+</div>
+
+<!-- ══════════════ PETAL CANVAS ══════════════ -->
+<canvas id="petal-canvas"></canvas>
+
+<!-- ══════════════ RIBBON ══════════════ -->
+<div id="ribbon"></div>
+
+<!-- ══════════════ MOBILE MENU ══════════════ -->
+<div class="mobile-menu" id="mobileMenu" role="dialog" aria-label="Navigation menu">
+  <button class="close-menu" id="closeMenu" aria-label="Close menu">✕</button>
+  <a href="#hero"         onclick="closeMobile()">Home</a>
+  <a href="#collections"  onclick="closeMobile()">Shop</a>
+  <a href="#collections"  onclick="closeMobile()">Collections</a>
+  <a href="#personalized" onclick="closeMobile()">Personalized</a>
+  <a href="#about"        onclick="closeMobile()">About</a>
+  <a href="#"             onclick="closeMobile()">Contact</a>
+</div>
+
+<!-- ══════════════ NAVBAR ══════════════ -->
+<nav id="navbar" role="navigation" aria-label="Main navigation">
+  <div class="nav-logo" onclick="scrollToTop()">
+    <!-- SVG Cherry Blossom Logo Mark -->
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <ellipse cx="19" cy="11" rx="4.2" ry="8.5"
+        fill="#F7D6E0" transform="rotate(0 19 19)" opacity=".95"/>
+      <ellipse cx="19" cy="11" rx="4.2" ry="8.5"
+        fill="#EFBFD0" transform="rotate(72 19 19)" opacity=".9"/>
+      <ellipse cx="19" cy="11" rx="4.2" ry="8.5"
+        fill="#F7D6E0" transform="rotate(144 19 19)" opacity=".95"/>
+      <ellipse cx="19" cy="11" rx="4.2" ry="8.5"
+        fill="#EFBFD0" transform="rotate(216 19 19)" opacity=".9"/>
+      <ellipse cx="19" cy="11" rx="4.2" ry="8.5"
+        fill="#F7D6E0" transform="rotate(288 19 19)" opacity=".95"/>
+      <circle cx="19" cy="19" r="4" fill="#C76B84"/>
+      <circle cx="19" cy="19" r="2" fill="#D8B98A"/>
+    </svg>
+    <span class="nav-brand">Cherry Blossom</span>
+  </div>
+
+  <ul class="nav-links" aria-label="Site navigation">
+    <li><a href="#hero">Home</a></li>
+    <li><a href="#collections">Shop</a></li>
+    <li><a href="#collections">Collections</a></li>
+    <li><a href="#personalized">Personalized</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+
+  <div class="nav-icons">
+    <button title="Search" aria-label="Search">🔍</button>
+    <button title="Wishlist" aria-label="Wishlist">🤍</button>
+    <button title="Cart" aria-label="Cart">🛍</button>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero" aria-label="Hero">
+  <!-- Ambient glow orbs -->
+  <div class="hero-orb" style="width:550px;height:550px;background:rgba(247,214,224,.32);top:-130px;left:-200px"></div>
+  <div class="hero-orb" style="width:380px;height:380px;background:rgba(199,107,132,.1);bottom:-70px;right:-100px"></div>
+  <div class="hero-orb" style="width:280px;height:280px;background:rgba(216,185,138,.17);top:28%;right:8%"></div>
+
+  <div class="hero-content">
+    <span class="hero-eyebrow" id="hEyebrow">Luxury Gifting Boutique &nbsp;·&nbsp; Est. 2024</span>
+    <h1 class="hero-title" id="hTitle">
+      Moments<br><em>Blooming</em><br>into Memories
+    </h1>
+    <p class="hero-sub" id="hSub">
+      Curated luxury gifts wrapped in emotion, crafted with love,<br>
+      delivered with the elegance of a cherry blossom in spring.
+    </p>
+    <div class="hero-ctas" id="hCtas">
+      <a href="#collections" class="btn-primary">Explore Collection ✦</a>
+      <a href="#personalized" class="btn-ghost">Personalize a Gift</a>
     </div>
+  </div>
+
+  <div class="hero-scroll" id="hScroll" aria-hidden="true">
+    <div class="scroll-line"></div>
+    <span class="scroll-label">Discover</span>
+  </div>
+</section>
+
+<!-- ══════════════ MARQUEE ══════════════ -->
+<div class="marquee-strip" aria-hidden="true">
+  <div class="marquee-track" id="marqueeTrack">
+    <span class="marquee-item">Free luxury gift wrap<span class="m-dot"></span></span>
+    <span class="marquee-item">Same day delivery<span class="m-dot"></span></span>
+    <span class="marquee-item">Luxury hampers curated with love<span class="m-dot"></span></span>
+    <span class="marquee-item">Personalised engraving available<span class="m-dot"></span></span>
+    <span class="marquee-item">100% premium quality assured<span class="m-dot"></span></span>
+    <span class="marquee-item">Free luxury gift wrap<span class="m-dot"></span></span>
+    <span class="marquee-item">Same day delivery<span class="m-dot"></span></span>
+    <span class="marquee-item">Luxury hampers curated with love<span class="m-dot"></span></span>
+    <span class="marquee-item">Personalised engraving available<span class="m-dot"></span></span>
+    <span class="marquee-item">100% premium quality assured<span class="m-dot"></span></span>
   </div>
 </div>
 
-<!-- MAIN WEBSITE CONTENT -->
-<div id="mainSite" class="opacity-0">
-  <!-- Sticky Navbar -->
-  <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 py-4 bg-[#FFF9F2] shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-      <!-- Logo -->
-      <a href="#" class="flex items-center gap-2 group" id="logoLink">
-        <div class="w-10 h-10 bg-gradient-to-br from-[#A11217] to-[#C9A46C] rounded-full flex items-center justify-center shadow-md group-hover:scale-105 transition">
-          <span class="text-white font-serif text-xl font-bold">R</span>
-        </div>
-        <div>
-          <span class="font-serif text-2xl font-bold text-[#A11217] tracking-wide">Red Ribbons</span>
-          <span class="block text-[10px] text-[#C9A46C] tracking-wider -mt-1">LUXURY GIFTING</span>
-        </div>
-      </a>
-      
-      <!-- Desktop Nav -->
-      <div class="hidden md:flex items-center gap-8">
-        <a href="#" class="nav-link text-[#4A3B32] hover:text-[#A11217] font-medium transition" data-page="home">Home</a>
-        <a href="#" class="nav-link text-[#4A3B32] hover:text-[#A11217] font-medium transition" data-page="catalogue">Shop</a>
-        <a href="#" class="nav-link text-[#4A3B32] hover:text-[#A11217] font-medium transition" data-page="about">About</a>
-        <a href="#" class="nav-link text-[#4A3B32] hover:text-[#A11217] font-medium transition" data-page="contact">Contact</a>
+<!-- ══════════════ COLLECTIONS ══════════════ -->
+<section id="collections">
+  <div class="collections-header reveal">
+    <div>
+      <span class="sec-eyebrow">Curated Collections</span>
+      <h2 class="sec-title">Gifts that speak<br><em>before words do</em></h2>
+    </div>
+    <a href="#" class="btn-ghost">View All Collections</a>
+  </div>
+
+  <div class="collections-grid">
+    <!-- Wide top-left -->
+    <div class="coll-card wide reveal" style="transition-delay:.08s">
+      <div class="cbg" style="background:linear-gradient(145deg,#F4B8CC,#F7D6E0,#EFCBD8)">🌸</div>
+      <div class="cov"></div>
+      <div class="cc">
+        <div class="cc-cat">Anniversary &amp; Romance</div>
+        <div class="cc-name">Petal &amp; Promise</div>
+        <a href="#" class="cc-link">Explore →</a>
       </div>
-      
-      <!-- Icons -->
-      <div class="flex items-center gap-5">
-        <i class="fas fa-search text-[#4A3B32] hover:text-[#A11217] cursor-pointer transition"></i>
-        <i class="far fa-heart text-[#4A3B32] hover:text-[#A11217] cursor-pointer transition"></i>
-        <div class="relative">
-          <i class="fas fa-shopping-bag text-[#4A3B32] hover:text-[#A11217] cursor-pointer transition"></i>
-          <span class="absolute -top-2 -right-2 bg-[#A11217] text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">0</span>
+    </div>
+    <!-- Top right 1 -->
+    <div class="coll-card reveal" style="transition-delay:.15s">
+      <div class="cbg" style="background:linear-gradient(145deg,#F3E7DC,#D8B98A,#F5EAD8)">🎂</div>
+      <div class="cov"></div>
+      <div class="cc">
+        <div class="cc-cat">Birthday</div>
+        <div class="cc-name">Bloom &amp; Celebrate</div>
+        <a href="#" class="cc-link">Explore →</a>
+      </div>
+    </div>
+    <!-- Top right 2 -->
+    <div class="coll-card reveal" style="transition-delay:.22s">
+      <div class="cbg" style="background:linear-gradient(145deg,#E8D5F0,#C8A8D8,#F0E0F8)">💍</div>
+      <div class="cov"></div>
+      <div class="cc">
+        <div class="cc-cat">Wedding</div>
+        <div class="cc-name">Sacred Bonds</div>
+        <a href="#" class="cc-link">Explore →</a>
+      </div>
+    </div>
+    <!-- Bottom left 1 -->
+    <div class="coll-card reveal" style="transition-delay:.1s">
+      <div class="cbg" style="background:linear-gradient(145deg,#D8F0E8,#A8D8C0,#E0F5EC)">🌿</div>
+      <div class="cov"></div>
+      <div class="cc">
+        <div class="cc-cat">Corporate</div>
+        <div class="cc-name">Executive Grace</div>
+        <a href="#" class="cc-link">Explore →</a>
+      </div>
+    </div>
+    <!-- Bottom left 2 -->
+    <div class="coll-card reveal" style="transition-delay:.18s">
+      <div class="cbg" style="background:linear-gradient(145deg,#FAE0D0,#F0B890,#FAE8D8)">🎁</div>
+      <div class="cov"></div>
+      <div class="cc">
+        <div class="cc-cat">Surprise</div>
+        <div class="cc-name">Moment in a Box</div>
+        <a href="#" class="cc-link">Explore →</a>
+      </div>
+    </div>
+    <!-- Wide bottom-right -->
+    <div class="coll-card wide reveal" style="transition-delay:.25s">
+      <div class="cbg" style="background:linear-gradient(145deg,#F7D6E0,#C76B84,#2D1B22);font-size:5.5rem">🌺</div>
+      <div class="cov"></div>
+      <div class="cc">
+        <div class="cc-cat">Luxury Bouquets</div>
+        <div class="cc-name">In Full Bloom</div>
+        <a href="#" class="cc-link">Explore →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ BEST SELLERS ══════════════ -->
+<section id="bestsellers">
+  <div class="bs-header reveal">
+    <div>
+      <span class="sec-eyebrow">Best Sellers</span>
+      <h2 class="sec-title">Loved by every<br><em>heart that gifted</em></h2>
+    </div>
+    <a href="#" class="btn-ghost">View All →</a>
+  </div>
+
+  <div class="products-grid">
+    <!-- Card 1 -->
+    <div class="prod-card reveal" style="transition-delay:.08s">
+      <div class="prod-img">
+        <div class="prod-img-fill" style="background:linear-gradient(145deg,#F7D6E0,#EEB5C8)">🌸</div>
+        <div class="prod-actions">
+          <button class="act-btn" aria-label="Wishlist" title="Add to wishlist">🤍</button>
+          <button class="act-btn" aria-label="Quick view" title="Quick view">👁</button>
+        </div>
+        <button class="qv-btn">Quick View</button>
+      </div>
+      <div class="prod-name">Sakura Bloom Bouquet</div>
+      <div class="prod-sub">Fresh &nbsp;·&nbsp; Handcrafted &nbsp;·&nbsp; Premium</div>
+      <div class="prod-price">₹ 2,850</div>
+    </div>
+    <!-- Card 2 -->
+    <div class="prod-card reveal" style="transition-delay:.15s">
+      <div class="prod-img">
+        <div class="prod-img-fill" style="background:linear-gradient(145deg,#F3E7DC,#D8B98A)">🍫</div>
+        <div class="prod-actions">
+          <button class="act-btn" aria-label="Wishlist" title="Add to wishlist">🤍</button>
+          <button class="act-btn" aria-label="Quick view" title="Quick view">👁</button>
+        </div>
+        <button class="qv-btn">Quick View</button>
+      </div>
+      <div class="prod-name">Gold &amp; Cocoa Hamper</div>
+      <div class="prod-sub">Luxury &nbsp;·&nbsp; Curated &nbsp;·&nbsp; Gifted</div>
+      <div class="prod-price">₹ 4,500</div>
+    </div>
+    <!-- Card 3 -->
+    <div class="prod-card reveal" style="transition-delay:.22s">
+      <div class="prod-img">
+        <div class="prod-img-fill" style="background:linear-gradient(145deg,#E8D5F0,#C8A8D8)">✨</div>
+        <div class="prod-actions">
+          <button class="act-btn" aria-label="Wishlist" title="Add to wishlist">🤍</button>
+          <button class="act-btn" aria-label="Quick view" title="Quick view">👁</button>
+        </div>
+        <button class="qv-btn">Quick View</button>
+      </div>
+      <div class="prod-name">Eternal Love Keepsake</div>
+      <div class="prod-sub">Personalised &nbsp;·&nbsp; Engraved &nbsp;·&nbsp; Forever</div>
+      <div class="prod-price">₹ 3,200</div>
+    </div>
+    <!-- Card 4 -->
+    <div class="prod-card reveal" style="transition-delay:.3s">
+      <div class="prod-img">
+        <div class="prod-img-fill" style="background:linear-gradient(145deg,#FAE0D0,#F0B890)">🎂</div>
+        <div class="prod-actions">
+          <button class="act-btn" aria-label="Wishlist" title="Add to wishlist">🤍</button>
+          <button class="act-btn" aria-label="Quick view" title="Quick view">👁</button>
+        </div>
+        <button class="qv-btn">Quick View</button>
+      </div>
+      <div class="prod-name">Velvet Truffle Cake</div>
+      <div class="prod-sub">Artisan &nbsp;·&nbsp; Rich &nbsp;·&nbsp; Decadent</div>
+      <div class="prod-price">₹ 1,980</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ SEASONAL ══════════════ -->
+<section id="seasonal">
+  <div class="seasonal-grid">
+    <div class="reveal">
+      <span class="sec-eyebrow">Seasonal Gifting</span>
+      <h2 class="sec-title">Spring has<br>its own <em>magic</em></h2>
+      <p class="sec-sub">Every season carries its own emotion. We craft gifting experiences that honour that feeling — from monsoon warmth to winter's quiet intimacy.</p>
+      <div class="seasonal-feats">
+        <div class="feat-item"><div class="feat-dot"></div><div class="feat-text">Curated seasonal arrangements inspired by nature's palette</div></div>
+        <div class="feat-item"><div class="feat-dot"></div><div class="feat-text">Fresh blooms sourced locally from artisan florists</div></div>
+        <div class="feat-item"><div class="feat-dot"></div><div class="feat-text">Personalised notes handwritten on cotton paper</div></div>
+        <div class="feat-item"><div class="feat-dot"></div><div class="feat-text">Eco-conscious packaging with a luxurious finish</div></div>
+      </div>
+      <div style="margin-top:2.5rem">
+        <a href="#" class="btn-primary">Shop This Season ✦</a>
+      </div>
+    </div>
+    <div class="seasonal-visual reveal" style="transition-delay:.2s">
+      <div class="seasonal-frame">🌸</div>
+      <div class="seasonal-badge">Spring Collection '25</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ PERSONALIZED ══════════════ -->
+<section id="personalized">
+  <div class="personal-grid">
+    <div class="personal-text reveal">
+      <span class="sec-eyebrow">Personalised Gifts</span>
+      <h2 class="sec-title">Because every<br>story is <em>yours</em></h2>
+      <p class="sec-sub">We believe the most beautiful gift is one that whispers your story. Engrave, embroider, compose — make it unforgettably yours.</p>
+      <div class="personal-cta-group">
+        <a href="#" class="btn-gold">Start Personalising ✦</a>
+        <a href="#" class="dark-link">How it works →</a>
+      </div>
+    </div>
+    <div class="personal-cards-grid reveal" style="transition-delay:.2s">
+      <div class="p-card">
+        <span class="p-icon">✍️</span>
+        <div class="p-label">Engraved Messages</div>
+        <div class="p-desc">Laser-etched words that last forever on jewellery, frames, and keepsakes.</div>
+      </div>
+      <div class="p-card">
+        <span class="p-icon">📸</span>
+        <div class="p-label">Photo Memories</div>
+        <div class="p-desc">Transform your favourite moments into gallery-worthy art pieces.</div>
+      </div>
+      <div class="p-card">
+        <span class="p-icon">🌸</span>
+        <div class="p-label">Bespoke Bouquets</div>
+        <div class="p-desc">Hand-crafted arrangements built around their favourite blooms and colours.</div>
+      </div>
+      <div class="p-card">
+        <span class="p-icon">🎁</span>
+        <div class="p-label">Custom Hampers</div>
+        <div class="p-desc">Curate every item — we assemble, style, and wrap with luxury finish.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ HAMPERS ══════════════ -->
+<section id="hampers">
+  <div class="hampers-header reveal">
+    <span class="sec-eyebrow">Luxury Hampers</span>
+    <h2 class="sec-title">Abundance wrapped<br>in <em>pure elegance</em></h2>
+    <p class="sec-sub" style="margin:0 auto;text-align:center">From intimate celebrations to grand gestures, our hampers are curated with love and presented with the luxury they deserve.</p>
+  </div>
+
+  <div class="hampers-grid">
+    <!-- Tall feature hamper -->
+    <div class="ham-card tall reveal" style="transition-delay:.1s">
+      <div class="ham-img" style="background:linear-gradient(145deg,#F7D6E0,#EEB5C8,#F3E7DC)">🌸🍫✨</div>
+      <div class="ham-content">
+        <div class="ham-name">The Blossom Hamper</div>
+        <div class="ham-desc">Sakura blooms, artisan chocolates, luxury candles, and a personalised note — our signature gift of love.</div>
+        <div class="ham-price">From ₹ 6,500</div>
+      </div>
+    </div>
+    <!-- Sub grid -->
+    <div class="ham-sub-grid">
+      <div class="ham-card reveal" style="transition-delay:.2s">
+        <div class="ham-img" style="background:linear-gradient(145deg,#F3E7DC,#D8B98A)">🥂🎁</div>
+        <div class="ham-content">
+          <div class="ham-name">Golden Moments</div>
+          <div class="ham-desc">Champagne truffles, premium dry fruits, and gilded keepsakes for milestone celebrations.</div>
+          <div class="ham-price">From ₹ 4,200</div>
+        </div>
+      </div>
+      <div class="ham-card reveal" style="transition-delay:.3s">
+        <div class="ham-img" style="background:linear-gradient(145deg,#E8D5F0,#C8A8D8)">💍🌿</div>
+        <div class="ham-content">
+          <div class="ham-name">Wedding Bliss Box</div>
+          <div class="ham-desc">A curation of luxurious tokens to mark the sacred beginning of forever.</div>
+          <div class="ham-price">From ₹ 8,800</div>
         </div>
       </div>
     </div>
-  </nav>
-
-  <!-- PAGE CONTAINER (Dynamic Routing Simulation) -->
-  <div id="pageContainer" class="pt-24"></div>
-
-  <!-- Footer -->
-  <footer class="bg-[#2C2420] text-[#E8D5C0] pt-16 pb-8 mt-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
-        <div class="lg:col-span-2">
-          <div class="flex items-center gap-2 mb-4">
-            <div class="w-10 h-10 bg-gradient-to-br from-[#A11217] to-[#C9A46C] rounded-full flex items-center justify-center">
-              <span class="text-white font-serif text-xl font-bold">R</span>
-            </div>
-            <div>
-              <span class="font-serif text-2xl font-bold text-white tracking-wide">Red Ribbons</span>
-              <span class="block text-[10px] text-[#C9A46C] tracking-wider -mt-1">LUXURY GIFTING</span>
-            </div>
-          </div>
-          <p class="text-sm text-[#C9A46C]/70 mb-4">Every gift carries a ribbon of emotion. Making moments unforgettable since 2024.</p>
-          <div class="flex gap-4">
-            <a href="#" class="text-[#C9A46C] hover:text-white transition"><i class="fab fa-instagram text-xl"></i></a>
-            <a href="#" class="text-[#C9A46C] hover:text-white transition"><i class="fab fa-facebook-f text-xl"></i></a>
-            <a href="#" class="text-[#C9A46C] hover:text-white transition"><i class="fab fa-pinterest text-xl"></i></a>
-          </div>
+    <!-- Third column -->
+    <div class="ham-sub-grid">
+      <div class="ham-card reveal" style="transition-delay:.25s">
+        <div class="ham-img" style="background:linear-gradient(145deg,#D8F0E8,#A8D8C0)">🌿📋</div>
+        <div class="ham-content">
+          <div class="ham-name">Executive Edition</div>
+          <div class="ham-desc">Premium corporate gifting, branded with grace and assembled with distinction.</div>
+          <div class="ham-price">From ₹ 3,500</div>
         </div>
-        <div><h4 class="font-serif font-semibold text-white mb-4">Quick Links</h4><ul class="space-y-2 text-sm"><li><a href="#" class="page-link hover:text-[#C9A46C] transition" data-page="catalogue">Shop All</a></li><li><a href="#" class="page-link hover:text-[#C9A46C] transition" data-page="about">Our Story</a></li><li><a href="#" class="page-link hover:text-[#C9A46C] transition" data-page="contact">Contact</a></li><li><a href="#" class="hover:text-[#C9A46C] transition">Track Order</a></li></ul></div>
-        <div><h4 class="font-serif font-semibold text-white mb-4">Categories</h4><ul class="space-y-2 text-sm"><li><a href="#" class="category-link" data-cat="birthday">Birthday Gifts</a></li><li><a href="#" class="category-link" data-cat="anniversary">Anniversary</a></li><li><a href="#" class="category-link" data-cat="wedding">Wedding Hampers</a></li><li><a href="#" class="category-link" data-cat="corporate">Corporate Gifts</a></li></ul></div>
-        <div><h4 class="font-serif font-semibold text-white mb-4">Support</h4><ul class="space-y-2 text-sm"><li><a href="#">FAQs</a></li><li><a href="#">Shipping Policy</a></li><li><a href="#">Returns & Exchange</a></li><li><a href="#">Gift Cards</a></li></ul></div>
       </div>
-      <div class="pt-8 border-t border-[#C9A46C]/20 text-center text-xs text-[#C9A46C]/60">
-        <p>© 2025 Red Ribbons — Luxury Gifting. All rights reserved. Made with <i class="fas fa-heart text-[#A11217] text-xs"></i> in India.</p>
+      <div class="ham-card reveal" style="transition-delay:.35s">
+        <div class="ham-img" style="background:linear-gradient(145deg,#FAE0D0,#F0C8A0)">🎀🕯</div>
+        <div class="ham-content">
+          <div class="ham-name">Soft Luxe Box</div>
+          <div class="ham-desc">Cashmere candles, bath rituals, and botanical skincare for pure self-love.</div>
+          <div class="ham-price">From ₹ 2,900</div>
+        </div>
       </div>
     </div>
-  </footer>
+  </div>
+</section>
+
+<!-- ══════════════ ABOUT ══════════════ -->
+<section id="about">
+  <div class="about-grid">
+    <div class="about-visual reveal">
+      <div class="about-img">🌸</div>
+      <div class="about-stat">
+        <div class="stat-num">50K+</div>
+        <div class="stat-lbl">Moments delivered</div>
+      </div>
+    </div>
+    <div class="reveal" style="transition-delay:.2s">
+      <span class="sec-eyebrow">Our Story</span>
+      <h2 class="sec-title">Every memory<br><em>blooms beautifully</em></h2>
+      <p style="font-size:.83rem;line-height:2;color:var(--muted);font-family:'Poppins',sans-serif;font-weight:300;margin-bottom:1.5rem">
+        Cherry Blossom was born from a simple belief — that a gift is never just an object. It is a frozen moment of love, an emotion carefully wrapped, a story told without words.
+      </p>
+      <p style="font-size:.83rem;line-height:2;color:var(--muted);font-family:'Poppins',sans-serif;font-weight:300;margin-bottom:2.5rem">
+        We are a luxury gifting boutique that curates experiences, not just products. Each arrangement, each hamper, each personalised piece is thoughtfully designed to make the recipient feel extraordinarily seen — because they are.
+      </p>
+      <div class="about-vals">
+        <div class="val-item">
+          <div class="val-title">Crafted with intention</div>
+          <div class="val-desc">Every piece is hand-selected by our curators who believe beauty lives in the details.</div>
+        </div>
+        <div class="val-item">
+          <div class="val-title">Delivered with love</div>
+          <div class="val-desc">From packaging to presentation, every step honours the emotion behind the gift.</div>
+        </div>
+        <div class="val-item">
+          <div class="val-title">Memories over moments</div>
+          <div class="val-desc">We create things that stay long after the occasion fades into a beautiful memory.</div>
+        </div>
+      </div>
+      <div style="margin-top:2.5rem">
+        <a href="#" class="btn-primary">Discover Our Story ✦</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ TESTIMONIALS ══════════════ -->
+<section id="testimonials">
+  <div class="reveal">
+    <span class="sec-eyebrow">Customer Stories</span>
+    <h2 class="sec-title">Voices of<br><em>every bloom</em></h2>
+  </div>
+
+  <div class="test-grid">
+    <div class="test-card reveal" style="transition-delay:.08s">
+      <div class="t-stars">★★★★★</div>
+      <div class="t-quote">"She cried when she saw the Blossom Hamper. The packaging alone felt like a work of art. This is what luxury gifting should feel like."</div>
+      <div class="t-author">
+        <div class="t-avatar">PK</div>
+        <div><div class="t-name">Priya Kapoor</div><div class="t-city">Mumbai</div></div>
+      </div>
+    </div>
+    <div class="test-card reveal" style="transition-delay:.18s">
+      <div class="t-stars">★★★★★</div>
+      <div class="t-quote">"The engraved keepsake was breathtaking. Every detail so thoughtful, so personal. Cherry Blossom turned our anniversary into poetry."</div>
+      <div class="t-author">
+        <div class="t-avatar">RS</div>
+        <div><div class="t-name">Rohan Sharma</div><div class="t-city">Delhi</div></div>
+      </div>
+    </div>
+    <div class="test-card reveal" style="transition-delay:.28s">
+      <div class="t-stars">★★★★★</div>
+      <div class="t-quote">"I've ordered from luxury brands before, but nothing compared to the experience here. The flowers were fresh, the wrapping divine, the emotion real."</div>
+      <div class="t-author">
+        <div class="t-avatar">AN</div>
+        <div><div class="t-name">Ananya Nair</div><div class="t-city">Bengaluru</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ GALLERY ══════════════ -->
+<section id="gallery">
+  <div class="gallery-header reveal">
+    <span class="sec-eyebrow">@cherryblossom.gifts</span>
+    <h2 class="sec-title">A glimpse of<br><em>blooming moments</em></h2>
+  </div>
+
+  <div class="gallery-grid">
+    <div class="gal-item reveal" style="background:linear-gradient(135deg,#F7D6E0,#EEB5C8);transition-delay:.05s">🌸<div class="gal-over">♡</div></div>
+    <div class="gal-item reveal" style="background:linear-gradient(135deg,#F3E7DC,#D8B98A);transition-delay:.1s">🎁<div class="gal-over">♡</div></div>
+    <div class="gal-item reveal" style="background:linear-gradient(135deg,#E8D5F0,#C8A8D8);transition-delay:.15s">✨<div class="gal-over">♡</div></div>
+    <div class="gal-item reveal" style="background:linear-gradient(135deg,#FAE0D0,#F0B890);transition-delay:.2s">🍫<div class="gal-over">♡</div></div>
+    <div class="gal-item reveal" style="background:linear-gradient(135deg,#D8F0E8,#A8D8C0);transition-delay:.25s">🌿<div class="gal-over">♡</div></div>
+    <div class="gal-item reveal" style="background:linear-gradient(135deg,#F7D6E0,#C76B84);transition-delay:.3s">💍<div class="gal-over">♡</div></div>
+  </div>
+</section>
+
+<!-- ══════════════ CTA BAND ══════════════ -->
+<div id="cta-band" class="reveal">
+  <h2 class="cta-band-title">Begin your gifting journey today</h2>
+  <p class="cta-band-sub">Every moment deserves to bloom beautifully.</p>
+  <a href="#collections" class="btn-white">Shop the Collection ✦</a>
 </div>
 
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <div class="footer-top">
+    <!-- Brand col -->
+    <div>
+      <div class="footer-brand">Cherry Blossom</div>
+      <div class="footer-slogan">Moments blooming into memories.</div>
+      <div class="footer-desc">A luxury gifting boutique where every emotion finds its expression, and every occasion becomes a memory worth keeping.</div>
+      <div class="newsletter-box">
+        <div class="nl-h4">Bloom with us</div>
+        <div class="nl-p">Join the Cherry Blossom circle for exclusive collections, seasonal drops, and gifting inspiration.</div>
+        <div class="nl-form">
+          <input type="email" placeholder="your@email.com" aria-label="Email address for newsletter">
+          <button type="button">Subscribe</button>
+        </div>
+      </div>
+    </div>
+    <!-- Shop col -->
+    <div class="footer-col">
+      <h4>Shop</h4>
+      <ul>
+        <li><a href="#">Birthday Gifts</a></li>
+        <li><a href="#">Anniversary</a></li>
+        <li><a href="#">Wedding Hampers</a></li>
+        <li><a href="#">Luxury Bouquets</a></li>
+        <li><a href="#">Personalised Gifts</a></li>
+        <li><a href="#">Cakes &amp; Desserts</a></li>
+        <li><a href="#">Corporate Gifting</a></li>
+        <li><a href="#">Surprise Boxes</a></li>
+      </ul>
+    </div>
+    <!-- Company col -->
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">Our Story</a></li>
+        <li><a href="#">Brand Values</a></li>
+        <li><a href="#">Sustainability</a></li>
+        <li><a href="#">Press &amp; Media</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+    </div>
+    <!-- Support col -->
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="#">Track Order</a></li>
+        <li><a href="#">Returns Policy</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Contact Us</a></li>
+        <li><a href="#">Gift Cards</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 Cherry Blossom. Crafted with love in India. All rights reserved.</div>
+    <div class="social-links">
+      <a class="soc" href="#" title="Instagram"  aria-label="Instagram">✦</a>
+      <a class="soc" href="#" title="Pinterest"  aria-label="Pinterest">◆</a>
+      <a class="soc" href="#" title="Facebook"   aria-label="Facebook">◇</a>
+      <a class="soc" href="#" title="YouTube"    aria-label="YouTube">▷</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ══════════════ JAVASCRIPT ══════════════ -->
 <script>
-  // ==================== RIBBON UNWRAP ANIMATION ====================
-  const unwrapOverlay = document.getElementById('unwrapOverlay');
-  const mainSite = document.getElementById('mainSite');
-  
-  // GSAP Timeline for cinematic unwrap
-  const tl = gsap.timeline({
-    onComplete: () => {
-      gsap.to(unwrapOverlay, { opacity: 0, duration: 0.8, delay: 0.2, onComplete: () => {
-        unwrapOverlay.style.display = 'none';
-        mainSite.classList.remove('opacity-0');
-        mainSite.classList.add('opacity-100');
-        // start floating ribbon particles
-        initFloatingRibbons();
-      }});
+/* ────────────────────────────
+   PETAL CANVAS
+──────────────────────────── */
+const canvas = document.getElementById('petal-canvas');
+const ctx    = canvas.getContext('2d');
+let petals   = [];
+let petalRunning = false;
+
+function resizeCanvas() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const PETAL_COLORS = ['#F7D6E0','#EEB5C8','#C76B84','#F3E7DC','#D8B98A','#FAD0E0','#EFCBD8'];
+
+function mkPetal(burst) {
+  const a = Math.random();
+  return {
+    x:       burst ? canvas.width  / 2 + (Math.random() - .5) * 500
+                   : Math.random() * canvas.width,
+    y:       burst ? canvas.height / 2 + (Math.random() - .5) * 350
+                   : -20,
+    sz:      Math.random() * 9 + 5,
+    vx:      (Math.random() - .5) * 2.2,
+    vy:      burst ? (Math.random() * 3.5 - 1.8) : Math.random() * 2 + .8,
+    rot:     Math.random() * Math.PI * 2,
+    rSpeed:  (Math.random() - .5) * .06,
+    alpha:   burst ? 0 : Math.random() * .55 + .25,
+    color:   PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)],
+    life:    burst ? 0 : 1,
+    isBurst: burst
+  };
+}
+
+function drawPetal(p) {
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.rotate(p.rot);
+  ctx.globalAlpha = p.isBurst ? Math.sin(p.life * Math.PI) * .7 : p.alpha;
+  ctx.fillStyle   = p.color;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, p.sz, p.sz * 1.75, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function tickPetals() {
+  if (!petalRunning) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  petals = petals.filter(p => {
+    if (p.isBurst) {
+      p.life += .018;
+      p.x    += p.vx * 2.4;
+      p.y    += p.vy * 2.4;
+      p.rot  += p.rSpeed;
+      return p.life < 1;
+    } else {
+      p.x  += p.vx + Math.sin(Date.now() * .001 + p.x * .012) * .5;
+      p.y  += p.vy;
+      p.rot += p.rSpeed;
+      return p.y < canvas.height + 30;
     }
   });
 
-  // Animation sequence
-  tl.fromTo('#giftLid', 
-    { rotationX: 0, y: 0 }, 
-    { rotationX: -180, y: -40, duration: 1.2, ease: "back.inOut(1.2)", delay: 0.4 }
-  )
-  .fromTo('#ribbonH', { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" }, "-=0.8")
-  .fromTo('#ribbonV', { scaleY: 0 }, { scaleY: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" }, "-=0.6")
-  .fromTo(['#bowLeft', '#bowRight'], 
-    { scale: 0, rotate: 0 }, 
-    { scale: 1, rotate: 0, duration: 0.5, ease: "back.out(1.2)" }, "-=0.4")
-  .fromTo('#bowCenter', { scale: 0 }, { scale: 1, duration: 0.4 }, "-=0.3")
-  .fromTo(['#tailLeft', '#tailRight'], 
-    { scaleX: 0, opacity: 0 }, 
-    { scaleX: 1, opacity: 1, duration: 0.5 }, "-=0.2")
-  .to(['#bowLeft', '#bowRight', '#tailLeft', '#tailRight'], 
-    { x: (i, target) => target.id === 'bowLeft' ? -80 : target.id === 'bowRight' ? 80 : target.id === 'tailLeft' ? -60 : 60,
-      y: (i, target) => target.id === 'tailLeft' || target.id === 'tailRight' ? 40 : -60,
-      opacity: 0, duration: 0.8, delay: 0.8 }, "-=0.2")
-  .to('#unwrapText', { opacity: 1, y: 0, duration: 0.6 }, "-=0.4");
-
-  // Floating ribbon particles after site loads
-  function initFloatingRibbons() {
-    for (let i = 0; i < 12; i++) {
-      const ribbon = document.createElement('div');
-      ribbon.className = 'ribbon-particle';
-      ribbon.innerHTML = '<i class="fas fa-ribbon"></i>';
-      ribbon.style.position = 'fixed';
-      ribbon.style.color = '#C9A46C';
-      ribbon.style.fontSize = (16 + Math.random() * 20) + 'px';
-      ribbon.style.left = Math.random() * 100 + '%';
-      ribbon.style.top = Math.random() * 100 + '%';
-      ribbon.style.opacity = '0.3';
-      ribbon.style.pointerEvents = 'none';
-      ribbon.style.zIndex = '0';
-      document.body.appendChild(ribbon);
-      gsap.to(ribbon, {
-        y: -200,
-        x: (Math.random() - 0.5) * 200,
-        rotation: 360,
-        duration: 10 + Math.random() * 15,
-        repeat: -1,
-        ease: "none",
-        delay: Math.random() * 5
-      });
-    }
+  const steady = petals.filter(p => !p.isBurst).length;
+  while (steady + petals.filter(p => p.isBurst).length < 35) {
+    petals.push(mkPetal(false));
   }
 
-  // ==================== PAGE ROUTING & CONTENT ====================
-  // Sample Product Data
-  const products = {
-    all: [
-      { id: 1, name: 'Eternal Rose Bouquet', category: 'flowers', price: 2499, oldPrice: 3499, rating: 4.8, image: 'https://images.unsplash.com/photo-1561181286-d3fee7d1ef0c?w=400', desc: '24 premium red roses with satin ribbon.' },
-      { id: 2, name: 'Velvet Truffle Hamper', category: 'birthday', price: 3999, oldPrice: 5499, rating: 4.9, image: 'https://images.unsplash.com/photo-1549465220-1a8c4d6bd7e7?w=400', desc: 'Luxury chocolate and wine hamper.' },
-      { id: 3, name: 'Personalized Love Letter Box', category: 'personalized', price: 1899, oldPrice: 2499, rating: 4.7, image: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=400', desc: 'Engraved wooden box with custom message.' },
-      { id: 4, name: 'Golden Anniversary Frame', category: 'anniversary', price: 2999, oldPrice: 4199, rating: 4.8, image: 'https://images.unsplash.com/photo-1584302179602-c42e6fe6c9dc?w=400', desc: 'Personalized photo frame with gold accents.' },
-      { id: 5, name: 'Corporate Excellence Hamper', category: 'corporate', price: 5499, oldPrice: 7999, rating: 4.9, image: 'https://images.unsplash.com/photo-1575895887714-4f6a8c6d89c7?w=400', desc: 'Premium corporate gift set.' },
-      { id: 6, name: 'Wedding Bliss Collection', category: 'wedding', price: 8999, oldPrice: 12999, rating: 5.0, image: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400', desc: 'Complete wedding hamper.' },
-      { id: 7, name: 'Red Velvet Cake', category: 'cakes', price: 1299, oldPrice: 1899, rating: 4.8, image: 'https://images.unsplash.com/photo-1586788224331-947f68671cf1?w=400', desc: 'Fresh baked red velvet cake.' },
-      { id: 8, name: 'Personalized Name Necklace', category: 'personalized', price: 3499, oldPrice: 4999, rating: 4.9, image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400', desc: 'Custom name gold-plated necklace.' }
-    ]
-  };
+  petals.forEach(drawPetal);
+  requestAnimationFrame(tickPetals);
+}
 
-  function renderHomePage() {
-    return `
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Hero -->
-        <div class="relative min-h-[85vh] flex items-center justify-center text-center">
-          <div class="absolute inset-0 bg-gradient-to-br from-[#FFF9F2] via-[#F5E6D3]/30 to-[#E8D5C0]/20"></div>
-          <div class="relative z-10">
-            <span class="inline-block px-4 py-2 bg-[#A11217]/10 rounded-full text-[#A11217] text-sm font-medium mb-6">Luxury Gifting Redefined</span>
-            <h1 class="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-[#2C2420] leading-tight">Every Gift Tells a<br><span class="text-[#A11217]">Love Story</span></h1>
-            <p class="text-lg md:text-xl text-[#5C4B3E] max-w-2xl mx-auto mt-6 font-garamond">Discover curated luxury gifts wrapped with our signature red ribbon. Each present is a promise of unforgettable moments.</p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-              <button class="btn-primary" onclick="navigateTo('catalogue')">Shop Now <i class="fas fa-arrow-right ml-2"></i></button>
-              <button class="btn-outline" onclick="navigateTo('about')">Our Story</button>
-            </div>
-          </div>
-        </div>
+/* ────────────────────────────
+   LOADER SEQUENCE
+──────────────────────────── */
+window.addEventListener('load', () => {
+  const loader  = document.getElementById('loader');
+  const lLogo   = document.getElementById('loader-logo');
+  const lTag    = document.getElementById('loader-tagline');
+  const lBar    = document.getElementById('loader-bar');
+  const lFill   = document.getElementById('loader-bar-fill');
+  const lCanvas = document.getElementById('petal-canvas');
+  const ribbon  = document.getElementById('ribbon');
 
-        <!-- Categories -->
-        <div class="py-16">
-          <h2 class="section-title text-center w-full">Shop by Occasion</h2>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
-            ${['birthday', 'anniversary', 'wedding', 'personalized'].map(cat => `
-              <div class="bg-gradient-to-br from-rose-100 to-rose-200 rounded-2xl p-6 text-center cursor-pointer card-hover shadow-md" onclick="navigateTo('catalogue', '${cat}')">
-                <i class="fas ${cat === 'birthday' ? 'fa-birthday-cake' : cat === 'anniversary' ? 'fa-ring' : cat === 'wedding' ? 'fa-dove' : 'fa-star'} text-4xl text-[#A11217]"></i>
-                <p class="mt-3 font-medium capitalize">${cat} Gifts</p>
-              </div>
-            `).join('')}
-          </div>
-        </div>
+  // Step 1 — logo
+  setTimeout(() => { lLogo.classList.add('show'); }, 280);
 
-        <!-- Best Sellers -->
-        <div class="py-16">
-          <h2 class="section-title text-center w-full">Best Sellers</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-            ${products.all.slice(0,4).map(p => `
-              <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover cursor-pointer" onclick="navigateToProduct(${p.id})">
-                <img src="${p.image}" class="w-full h-64 object-cover" alt="${p.name}">
-                <div class="p-5">
-                  <h3 class="font-serif font-semibold text-lg">${p.name}</h3>
-                  <div class="flex items-center gap-2 mt-2"><i class="fas fa-star text-[#C9A46C]"></i><span>${p.rating}</span></div>
-                  <div class="flex items-center gap-2 mt-3"><span class="text-2xl font-bold text-[#A11217]">₹${p.price}</span><span class="text-sm line-through text-gray-400">₹${p.oldPrice}</span></div>
-                  <button class="w-full mt-4 bg-[#2C2420] text-white py-2 rounded-full hover:bg-[#A11217] transition">Add to Cart</button>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-
-        <!-- Personalized Banner -->
-        <div class="relative my-16 rounded-3xl overflow-hidden h-96">
-          <img src="https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=1200" class="w-full h-full object-cover">
-          <div class="absolute inset-0 bg-gradient-to-r from-[#A11217]/80 to-[#2C2420]/70 flex items-center justify-center text-center text-white">
-            <div><span class="px-4 py-2 bg-white/20 rounded-full text-sm">Create Memories</span><h2 class="text-4xl md:text-5xl font-serif font-bold mt-4">Personalized Gifts</h2><button class="btn-primary mt-6 bg-white text-[#A11217] hover:bg-white/90" onclick="navigateTo('catalogue','personalized')">Start Personalizing</button></div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderCataloguePage(filterCat = null) {
-    const activeCat = filterCat || 'all';
-    const filtered = activeCat === 'all' ? products.all : products.all.filter(p => p.category === activeCat);
-    const categories = ['all', 'birthday', 'anniversary', 'wedding', 'corporate', 'personalized', 'flowers', 'cakes'];
-    return `
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 class="text-4xl md:text-5xl font-serif font-bold text-center mb-4">Our Collection</h1>
-        <p class="text-center text-[#5C4B3E] mb-8 font-garamond">Find the perfect gift wrapped with our signature red ribbon</p>
-        <div class="flex flex-wrap justify-center gap-3 mb-10">
-          ${categories.map(cat => `<button class="category-btn px-5 py-2 rounded-full transition ${activeCat === cat ? 'bg-[#A11217] text-white shadow-md' : 'bg-white border border-[#E8D5C0] hover:border-[#A11217]'}" data-cat="${cat}">${cat === 'all' ? 'All Gifts' : cat.charAt(0).toUpperCase() + cat.slice(1)}</button>`).join('')}
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          ${filtered.map(p => `
-            <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover cursor-pointer" onclick="navigateToProduct(${p.id})">
-              <img src="${p.image}" class="w-full h-64 object-cover" alt="${p.name}">
-              <div class="p-5"><h3 class="font-serif font-semibold text-lg">${p.name}</h3><div class="flex items-center gap-2 mt-2"><i class="fas fa-star text-[#C9A46C]"></i><span>${p.rating}</span></div><div class="flex items-center gap-2 mt-3"><span class="text-2xl font-bold text-[#A11217]">₹${p.price}</span><span class="text-sm line-through text-gray-400">₹${p.oldPrice}</span></div><button class="w-full mt-4 bg-[#2C2420] text-white py-2 rounded-full hover:bg-[#A11217] transition">Quick View</button></div>
-            </div>
-          `).join('')}
-        </div>
-        ${filtered.length === 0 ? '<p class="text-center py-20 text-[#5C4B3E]">No products found.</p>' : ''}
-      </div>
-    `;
-  }
-
-  function renderAboutPage() {
-    return `
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="relative h-[50vh] rounded-3xl overflow-hidden mb-16">
-          <img src="https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=1200" class="w-full h-full object-cover">
-          <div class="absolute inset-0 bg-gradient-to-r from-[#A11217]/80 to-[#2C2420]/70 flex items-center justify-center"><h1 class="text-5xl md:text-6xl font-serif font-bold text-white">Our Story</h1></div>
-        </div>
-        <div class="max-w-3xl mx-auto text-center mb-20">
-          <p class="text-[#5C4B3E] text-lg font-garamond leading-relaxed mb-6">Founded with a simple belief — that the true magic of gifting lies not just in the present itself, but in the anticipation, the unwrapping, and the ribbon that holds it all together.</p>
-          <p class="text-[#5C4B3E] text-lg font-garamond leading-relaxed">At Red Ribbons, we've transformed ordinary gifting into an art form. Each of our creations is handcrafted, wrapped with our signature satin ribbon, and delivered like a precious memory waiting to be unwrapped.</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-16">
-          ${['Emotion First', 'Premium Quality', 'Customer Love', 'Award Winning'].map((title, i) => `<div class="text-center p-6 bg-white rounded-2xl shadow-lg"><div class="w-16 h-16 bg-[#A11217]/10 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas ${i===0?'fa-heart':i===1?'fa-gem':i===2?'fa-users':'fa-trophy'} text-2xl text-[#A11217]"></i></div><h3 class="font-serif font-semibold text-xl">${title}</h3></div>`).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  function renderContactPage() {
-    return `
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 class="text-4xl md:text-5xl font-serif font-bold text-center mb-4">Let's Connect</h1>
-        <p class="text-center text-[#5C4B3E] mb-12 font-garamond">We'd love to hear from you</p>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div class="bg-white rounded-2xl shadow-xl p-8"><h2 class="text-2xl font-serif font-semibold mb-6">Send us a Message</h2><form id="contactForm" class="space-y-5"><input type="text" placeholder="Your Name" class="w-full p-3 border border-[#E8D5C0] rounded-xl focus:border-[#A11217] outline-none"><input type="email" placeholder="Email Address" class="w-full p-3 border border-[#E8D5C0] rounded-xl focus:border-[#A11217] outline-none"><textarea rows="4" placeholder="Your Message" class="w-full p-3 border border-[#E8D5C0] rounded-xl focus:border-[#A11217] outline-none"></textarea><button type="submit" class="w-full bg-[#A11217] text-white py-3 rounded-xl font-medium hover:bg-[#7A0E12] transition">Send Message <i class="fas fa-paper-plane ml-2"></i></button></form></div>
-          <div class="space-y-6"><div class="bg-gradient-to-br from-[#A11217] to-[#7A0E12] text-white rounded-2xl p-8"><h2 class="text-2xl font-serif font-semibold mb-6">Get in Touch</h2><div class="space-y-4"><div><i class="fas fa-envelope mr-3"></i> hello@redribbons.com</div><div><i class="fas fa-phone mr-3"></i> +91 98765 43210</div><div><i class="fas fa-map-marker-alt mr-3"></i> Mumbai, India (Worldwide Shipping)</div></div><div class="mt-8 pt-6 border-t border-white/20"><div class="flex gap-4"><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/30"><i class="fab fa-instagram"></i></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/30"><i class="fab fa-facebook-f"></i></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/30"><i class="fab fa-whatsapp"></i></a></div></div></div><div class="rounded-2xl overflow-hidden shadow-lg h-64 bg-[#E8D5C0] flex items-center justify-center text-[#A11217]"><i class="fas fa-map-marker-alt text-4xl"></i><span class="ml-2">Premium Location Map</span></div></div>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderProductDetailPage(productId) {
-    const p = products.all.find(prod => prod.id === parseInt(productId));
-    if (!p) return renderCataloguePage();
-    return `
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-sm text-[#5C4B3E] mb-6"><a href="#" onclick="navigateTo('home'); return false;">Home</a> / <a href="#" onclick="navigateTo('catalogue'); return false;">Shop</a> / <span class="text-[#A11217]">${p.name}</span></div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div><img src="${p.image}" class="w-full rounded-2xl shadow-xl"></div>
-          <div><h1 class="text-3xl md:text-4xl font-serif font-bold">${p.name}</h1><div class="flex items-center gap-2 mt-3"><i class="fas fa-star text-[#C9A46C]"></i><span>${p.rating}</span><span class="text-gray-400">|</span><span class="text-green-600">In Stock</span></div><div class="mt-6"><span class="text-3xl font-bold text-[#A11217]">₹${p.price}</span><span class="text-gray-400 line-through ml-3">₹${p.oldPrice}</span></div><p class="mt-6 text-[#5C4B3E]">${p.desc} Wrapped with our signature satin red ribbon and premium gift box.</p><div class="mt-8"><label class="font-semibold block mb-2">Personalize Message</label><textarea placeholder="Write a heartfelt message..." class="w-full p-3 border border-[#E8D5C0] rounded-xl" rows="3"></textarea></div><div class="mt-8 flex gap-4"><button class="flex-1 bg-[#A11217] text-white py-3 rounded-full font-medium hover:bg-[#7A0E12] transition"><i class="fas fa-shopping-bag mr-2"></i> Add to Cart</button><button class="p-3 border border-[#E8D5C0] rounded-full hover:border-[#A11217]"><i class="far fa-heart"></i></button></div></div>
-        </div>
-      </div>
-    `;
-  }
-
-  let currentPage = 'home';
-  let currentFilter = null;
-
-  window.navigateTo = function(page, filter = null) {
-    currentPage = page;
-    currentFilter = filter;
-    const container = document.getElementById('pageContainer');
-    if (page === 'home') container.innerHTML = renderHomePage();
-    else if (page === 'catalogue') container.innerHTML = renderCataloguePage(filter);
-    else if (page === 'about') container.innerHTML = renderAboutPage();
-    else if (page === 'contact') container.innerHTML = renderContactPage();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    attachCategoryEvents();
-    attachNavActive();
-  };
-
-  window.navigateToProduct = function(id) {
-    currentPage = 'product';
-    const container = document.getElementById('pageContainer');
-    container.innerHTML = renderProductDetailPage(id);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    attachNavActive();
-  };
-
-  function attachCategoryEvents() {
-    document.querySelectorAll('.category-btn').forEach(btn => {
-      btn.removeEventListener('click', handleCatClick);
-      btn.addEventListener('click', handleCatClick);
-    });
-    document.querySelectorAll('.category-link').forEach(link => {
-      link.removeEventListener('click', handleCatLink);
-      link.addEventListener('click', handleCatLink);
-    });
-  }
-
-  function handleCatClick(e) {
-    const cat = e.currentTarget.getAttribute('data-cat');
-    navigateTo('catalogue', cat);
-  }
-  function handleCatLink(e) {
-    e.preventDefault();
-    const cat = e.currentTarget.getAttribute('data-cat');
-    navigateTo('catalogue', cat);
-  }
-
-  function attachNavActive() {
-    document.querySelectorAll('.nav-link, .page-link').forEach(link => {
-      link.removeEventListener('click', navHandler);
-      link.addEventListener('click', navHandler);
-    });
-  }
-
-  function navHandler(e) {
-    e.preventDefault();
-    const page = e.currentTarget.getAttribute('data-page');
-    if (page) navigateTo(page);
-  }
-
-  // Scroll Navbar Effect
-  window.addEventListener('scroll', () => {
-    const navbar = document.getElementById('navbar');
-    if (window.scrollY > 50) navbar.classList.add('glass');
-    else navbar.classList.remove('glass');
-  });
-
-  // Initial Load
+  // Step 2 — tagline + bar
   setTimeout(() => {
-    navigateTo('home');
-  }, 200);
+    lTag.classList.add('show');
+    lBar.classList.add('show');
+    lFill.classList.add('fill');
+  }, 780);
+
+  // Step 3 — petal burst
+  setTimeout(() => {
+    lCanvas.classList.add('show');
+    petalRunning = true;
+    for (let i = 0; i < 50; i++) {
+      setTimeout(() => petals.push(mkPetal(true)), i * 25);
+    }
+    tickPetals();
+  }, 1400);
+
+  // Step 4 — ribbon sweep
+  setTimeout(() => {
+    ribbon.classList.add('sweep');
+  }, 1900);
+
+  // Step 5 — reveal page
+  setTimeout(() => {
+    loader.classList.add('fade-out');
+    setTimeout(() => { loader.style.display = 'none'; }, 1300);
+    setTimeout(() => { ribbon.classList.add('hide'); }, 800);
+    revealHero();
+  }, 2700);
+});
+
+function revealHero() {
+  const steps = [
+    { id: 'hEyebrow', delay: 0   },
+    { id: 'hTitle',   delay: 180 },
+    { id: 'hSub',     delay: 380 },
+    { id: 'hCtas',    delay: 580 },
+    { id: 'hScroll',  delay: 900 },
+  ];
+  steps.forEach(({ id, delay }) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    setTimeout(() => el.classList.add('show'), delay);
+  });
+}
+
+/* ────────────────────────────
+   NAVBAR SCROLL
+──────────────────────────── */
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 70);
+}, { passive: true });
+
+/* ────────────────────────────
+   SCROLL REVEAL
+──────────────────────────── */
+const revObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      revObs.unobserve(e.target);
+    }
+  });
+}, { threshold: .1 });
+
+document.querySelectorAll('.reveal').forEach(el => revObs.observe(el));
+
+/* ────────────────────────────
+   AMBIENT PETAL EMITTER
+──────────────────────────── */
+function spawnAmbient() {
+  if (!petalRunning) return;
+  const icons = ['🌸', '🌺', '✿', '❀', '🌷'];
+  const petal = document.createElement('div');
+  petal.className = 'fp';
+  petal.textContent = icons[Math.floor(Math.random() * icons.length)];
+  petal.style.left     = Math.random() * 100 + 'vw';
+  petal.style.top      = '-30px';
+  petal.style.fontSize = (Math.random() * 10 + 10) + 'px';
+  petal.style.opacity  = '0';
+  const dur = Math.random() * 7 + 9;
+  petal.style.animationDuration = dur + 's';
+  document.body.appendChild(petal);
+  setTimeout(() => petal.remove(), dur * 1000 + 200);
+}
+setInterval(spawnAmbient, 1400);
+
+/* ────────────────────────────
+   MOBILE MENU
+──────────────────────────── */
+const hamburger  = document.getElementById('hamburgerBtn');
+const mobileMenu = document.getElementById('mobileMenu');
+const closeMenu  = document.getElementById('closeMenu');
+
+hamburger.addEventListener('click', () => {
+  mobileMenu.classList.add('open');
+  hamburger.setAttribute('aria-expanded', 'true');
+  document.body.style.overflow = 'hidden';
+});
+
+function closeMobile() {
+  mobileMenu.classList.remove('open');
+  hamburger.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = '';
+}
+closeMenu.addEventListener('click', closeMobile);
+
+/* ────────────────────────────
+   UTILITY
+──────────────────────────── */
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ────────────────────────────
+   NEWSLETTER
+──────────────────────────── */
+document.querySelector('.nl-form button').addEventListener('click', function() {
+  const input = this.previousElementSibling;
+  const val   = input.value.trim();
+  if (!val || !val.includes('@')) {
+    input.style.borderBottom = '1px solid #C76B84';
+    input.focus();
+    return;
+  }
+  this.textContent = '✓ Done';
+  this.style.background = '#A8D8C0';
+  input.value = '';
+  setTimeout(() => {
+    this.textContent = 'Subscribe';
+    this.style.background = '';
+  }, 3000);
+});
 </script>
 </body>
 </html>
