@@ -47,10 +47,11 @@
     display: flex; align-items: center; gap: 8px;
   }
   .nav-logo img {
-    height: 52px;
+    height: 78px;
     width: auto;
     display: block;
     object-fit: contain;
+    margin: -13px 0; /* lets the logo overflow into existing nav padding instead of growing the navbar */
   }
   .nav-links { display: flex; gap: 36px; list-style: none; }
   .nav-links a {
@@ -551,7 +552,7 @@
   @media (max-width: 900px) {
     nav { padding: 18px 24px; }
     .nav-links { display: none; }
-    .nav-logo img { height: 42px; }
+    .nav-logo img { height: 58px; margin: -8px 0; }
     .hero { grid-template-columns: 1fr; min-height: auto; }
     .hero-right { min-height: 320px; }
     .hero-left { padding: 60px 24px 40px; }
@@ -584,6 +585,7 @@
 <!-- HERO -->
 <section class="hero" style="padding: 0;">
   <div class="hero-left">
+    <div class="hero-eyebrow">Thoughtfully curated gifts</div>
     <h1 class="hero-headline">
       Every gift<br/>tells a <em>story</em><br/>worth keeping
     </h1>
