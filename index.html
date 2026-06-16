@@ -46,7 +46,12 @@
     text-decoration: none;
     display: flex; align-items: center; gap: 8px;
   }
-  .nav-logo span { color: var(--cherry); }
+  .nav-logo img {
+    height: 52px;
+    width: auto;
+    display: block;
+    object-fit: contain;
+  }
   .nav-links { display: flex; gap: 36px; list-style: none; }
   .nav-links a {
     font-size: 0.82rem;
@@ -546,6 +551,7 @@
   @media (max-width: 900px) {
     nav { padding: 18px 24px; }
     .nav-links { display: none; }
+    .nav-logo img { height: 42px; }
     .hero { grid-template-columns: 1fr; min-height: auto; }
     .hero-right { min-height: 320px; }
     .hero-left { padding: 60px 24px 40px; }
@@ -563,7 +569,9 @@
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="nav-logo">🌸 Cherry <span>Blossom</span></a>
+  <a href="#" class="nav-logo">
+    <img src="logo.png" alt="Cherry Blossom — Personalised Gifts" width="370" height="356" />
+  </a>
   <ul class="nav-links">
     <li><a href="#collections">Collections</a></li>
     <li><a href="#how">How it works</a></li>
